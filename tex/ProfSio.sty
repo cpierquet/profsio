@@ -1,0 +1,384 @@
+% Author     : C. Pierquet
+% licence    : Released under the LaTeX Project Public License v1.3c or later, see http://www.latex-project.org/lppl.txtf
+
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{ProfSio}[2023/06/22 0.1.0 Pour les enseignants en BTS SIO]
+%0.1.0	Version initiale
+
+%------Packages utiles
+\RequirePackage{tikz,pgffor}
+\RequirePackage{tabularray}
+\RequirePackage{simplekv}
+\RequirePackage{xstring}
+\RequirePackage{listofitems}
+\RequirePackage{xintexpr}
+%------Librairies
+\usetikzlibrary{positioning,decorations.pathreplacing,decorations.markings,arrows,calc,babel}
+
+%------Graphe MPM
+\defKV[MPM]{%
+	CouleurDurees=\def\MPMCoulDuree{#1},%
+	CouleurFleches=\def\MPMCoulFleche{#1},%
+	LargeurCases=\def\MPMLargBoite{#1},%
+	Epaisseur=\def\MPMThick{#1},%
+	Police=\def\MPMFont{#1},%
+	CouleurDates=\def\MPMCoulDates{#1},%
+	CouleurBords=\def\MPMCoulTraits{#1},%
+	Grille=\def\MPMGrille{#1}
+}
+
+\setKVdefault[MPM]{%
+	CouleurDurees=purple,
+	CouleurFleches=blue,%
+	LargeurCases=0.75cm,%
+	Epaisseur=0.75pt,%
+	Police=\footnotesize\sffamily,%
+	CouleurDates=teal/red,%
+	CouleurBords=black,%
+	NoirBlanc=false,%
+	Grille={}
+}
+
+\NewTblrEnviron{MPMtache}
+\SetTblrInner[MPMtache]{rowsep=1pt,colsep=1pt,colspec={Q[\MPMLargBoite,m,c]Q[\MPMLargBoite,m,c]},cells={font=\MPMFont},row{1}={font=\bfseries\MPMFont}}
+
+\tikzset{
+	pics/MPM/.style args={nom=#1,t=#2,T=#3}{%1=nom noeud,2=t,3=T
+		code = {
+			\node[inner sep=0pt,outer sep=0pt] (#1) at (0,0) {
+				\begin{MPMtache}{hlines={wd=\MPMThick,fg=\MPMCoulTraits},vlines={wd=\MPMThick,fg=\MPMCoulTraits}}
+					\SetCell[c=2]{c} {#1} & \\
+					\textcolor{\MPMCoulDatet}{#2} & \textcolor{\MPMCoulDateT}{#3} \\
+				\end{MPMtache}};
+		}
+	},
+	pics/MPMcomplet/.style args={nom=#1,t=#2,T=#3,MT=#4,ML=#5}{%1=nom noeud/2=t/3=T/4=MT/5=ML
+		code = {
+			\node[inner sep=0pt,outer sep=0pt] (#1) at (0,0) {
+				\begin{MPMtache}{hlines={wd=\MPMThick,fg=\MPMCoulTraits},vlines={wd=\MPMThick,fg=\MPMCoulTraits}}
+					\SetCell[c=2]{c} {#1} & \\
+					\textcolor{\MPMCoulDatet}{#2} & \textcolor{\MPMCoulDateT}{#3} \\
+					#4 & #5 \\
+			\end{MPMtache}};
+		}
+	},%
+	pics/MPMnotice/.style={%
+		code = {
+			\node[inner sep=0pt,outer sep=0pt] (Notice) at (0,0) {
+				\begin{MPMtache}{hline{2-Z}={wd=\MPMThick,fg=\MPMCoulTraits},vlines={2-Z}{wd=\MPMThick,fg=\MPMCoulTraits}}
+					\SetCell[c=2]{c} \textcolor{violet}{Aide} & \\
+					\SetCell[c=2]{c} \textbf{Som.} & \\
+					\textcolor{\MPMCoulDatet}{t} & \textcolor{\MPMCoulDateT}{T} \\
+			\end{MPMtache}};
+		}
+	},%
+	pics/MPMnoticecomplet/.style={%
+		code = {
+			\node[inner sep=0pt,outer sep=0pt] (Notice) at (0,0) {
+				\begin{MPMtache}{hline{2-Z}={wd=\MPMThick,fg=\MPMCoulTraits},vlines={2-Z}{wd=\MPMThick,fg=\MPMCoulTraits}}
+					\SetCell[c=2]{c} \textcolor{violet}{Aide} & \\
+					\SetCell[c=2]{c} {Som.} & \\
+					\textcolor{\MPMCoulDatet}{t} & \textcolor{\MPMCoulDateT}{T} \\
+					MT & ML \\
+			\end{MPMtache}};
+		}
+	},%
+	dureeMPM/.style={circle,draw=none,fill=white,inner sep=1pt,font=\MPMFont,text=\MPMCoulDuree},
+	arcMPM/.style={\MPMCoulFleche,->,>=latex,line width=\MPMThick,line cap=round}
+}
+
+
+\NewDocumentCommand\MPMPlaceTache{ r() r() r() }{%
+	\StrCount{#3}{,}[\MPMtmpType]
+	\xintifboolexpr{\MPMtmpType == 1 }%si il n'y a que 2 dates...
+		{%
+			\StrCut{#3}{,}{\MPMtmpt}{\MPMtmpT}%
+			\pic at (#1) {MPM={nom=#2,t=\MPMtmpt,T=\MPMtmpT}} ;
+		}%
+		{%
+			\StrBefore[1]{#3}{,}[\MPMtmpt]%
+			\StrBetween[1,2]{#3}{,}{,}[\MPMtmpT]%
+			\StrBetween[2,3]{#3}{,}{,}[\MPMtmpMT]%
+			\StrBehind[3]{#3}{,}[\MPMtmpML]%
+			\pic at (#1) {MPMcomplet={nom=#2,t=\MPMtmpt,T=\MPMtmpT,MT=\MPMtmpMT,ML=\MPMtmpML}} ;
+		}%
+}
+
+\NewDocumentCommand\MPMPlaceTaches{ m }{%
+	\setsepchar[.]{/}%
+	\readlist*\MPMListeTaches{#1}%
+	\foreach \i in {1,2,...,\MPMListeTacheslen}%
+		{%
+			\itemtomacro\MPMListeTaches[\i]{\MPMtmpData}%
+			\StrBetween[1,1]{\MPMtmpData}{(}{)}[\MPMtmpCoord]%
+			\StrBetween[2,2]{\MPMtmpData}{(}{)}[\MPMtmpTache]%
+			\StrBetween[3,3]{\MPMtmpData}{(}{)}[\MPMtmpDates]%
+			\MPMPlaceTache(\MPMtmpCoord)(\MPMtmpTache)(\MPMtmpDates)
+		}%
+}
+
+\NewDocumentCommand\MPMPlaceNotice{ s r() }{%
+	\IfBooleanTF{#1}%
+		{%
+			\pic at (#2) {MPMnoticecomplet} ;
+		}%
+		{%
+			\pic at (#2) {MPMnotice} ;
+		}%
+}
+
+\defKV[MPMarc]{%
+	DecalHorizDeb=\def\MPMOffsetHInit{#1},%
+	DecalVertDeb=\def\MPMOffsetVInit{#1},%
+	DecalHorizFin=\def\MPMOffsetHFin{#1},%
+	DecalVertFin=\def\MPMOffsetVFin{#1},%
+	SensCoude=\def\MPMOrientation{#1},%
+	HauteurCoude=\def\MPMHautCoude{#1}
+}
+
+\setKVdefault[MPMarc]{%
+	DecalHorizDeb=0pt,%
+	DecalVertDeb=0pt,%
+	DecalHorizFin=0pt,%
+	DecalVertFin=0pt,%
+	Coude=false,%
+	SensCoude=HV,%
+	HauteurCoude=10pt
+}
+
+\NewDocumentCommand\MPMPlaceDuree{ O{} m D<>{midway}}{%
+	\useKVdefault[MPMarc]%
+	\setKV[MPMarc]{#1}%
+	\StrBefore{#2}{>}[\MPMSommetDep]%
+	\StrBetween{#2}{>}{,}[\MPMSommetFin]%
+	\StrBehind{#2}{,}[\MPMduree]%
+	\ifboolKV[MPMarc]{Coude}%
+		{%
+			\IfStrEq{\MPMOrientation}{HV}%
+				{%
+					\draw[arcMPM] ([xshift=\MPMOffsetHInit,yshift=\MPMOffsetVInit]\MPMSommetDep) -| ([xshift=\MPMOffsetHFin,yshift=\MPMOffsetVFin]\MPMSommetFin) node[dureeMPM,#3] {\MPMduree} ;
+				}{}%
+			\IfStrEq{\MPMOrientation}{VH}%
+				{%
+					\draw[arcMPM] ([xshift=\MPMOffsetHInit,yshift=\MPMOffsetVInit]\MPMSommetDep) |- ([xshift=\MPMOffsetHFin,yshift=\MPMOffsetVFin]\MPMSommetFin) node[dureeMPM,#3] {\MPMduree} ;
+				}{}%
+			\IfStrEq{\MPMOrientation}{VHV}%
+				{%
+					\draw[arcMPM] ([xshift=\MPMOffsetHInit,yshift=\MPMOffsetVInit]\MPMSommetDep)--++(0,{-\MPMHautCoude}) -| ([xshift=\MPMOffsetHFin,yshift=\MPMOffsetVFin]\MPMSommetFin) node[dureeMPM,#3] {\MPMduree} ;
+				}{}%
+		}%
+		{%
+			\draw[arcMPM] ([xshift=\MPMOffsetHInit,yshift=\MPMOffsetVInit]\MPMSommetDep) -- ([xshift=\MPMOffsetHFin,yshift=\MPMOffsetVFin]\MPMSommetFin) node[dureeMPM,#3] {\MPMduree} ;
+		}%
+}
+
+\NewDocumentCommand\MPMPlaceDurees{ O{} m D<>{midway} }{%
+	\setsepchar[.]{/}*
+	\readlist*\KGHListeDurees{#2}%
+	\foreachitem\dureetache\in\KGHListeDurees{%
+		\MPMPlaceDuree[#1]{\dureetache}<#3>%
+	}
+}
+
+\NewDocumentEnvironment{GrapheMPM}{ O{} D<>{} }%
+{%
+	\useKVdefault[MPM]%
+	\setKV[MPM]{#1}%
+	\ifboolKV[MPM]{NoirBlanc}%
+		{%
+			\def\MPMCoulDuree{black}%
+			\def\MPMCoulFleche{black}%
+			\def\MPMCoulDates{black}%
+			\def\MPMCoulTraits{black}
+		}{}%
+	\IfSubStr{\MPMCoulDates}{/}%
+		{%
+			\StrCut{\MPMCoulDates}{/}{\MPMCoulDatet}{\MPMCoulDateT}%
+		}%
+		{%
+			\xdef\MPMCoulDatet{\MPMCoulDates}\xdef\MPMCoulDateT{\MPMCoulDates}
+		}%
+	\begin{tikzpicture}[#2]
+		\IfStrEq{\MPMGrille}{}%
+			{}%
+			{%
+				\StrCut{\MPMGrille}{,}{\MPMGrilleX}{\MPMGrilleY}%
+				\draw[thin,dotted,lightgray,xstep=0.5,ystep=0.5] (0,0) grid (\MPMGrille) ;
+				\draw[thin,lightgray,xstep=1,ystep=1] (0,0) grid (\MPMGrille) ;
+				\foreach \x in {0,0.5,...,\MPMGrilleX} {\draw[thin,lightgray] (\x,0)--++(0,-2pt) node[below,inner sep=1pt,font=\sffamily\tiny] {\x} ;}
+				\foreach \y in {0,0.5,...,\MPMGrilleY} {\draw[thin,lightgray] (0,\y)--++(-2pt,0) node[left,inner sep=1pt,font=\sffamily\tiny] {\y} ;}
+				\filldraw[lightgray] (0,0) circle[radius=1.5pt] ;
+			}%
+}%
+{%
+	\end{tikzpicture}
+}
+
+%------Karnaugh (3 variables)
+\defKV[tblkgh]{%
+	Unite=\def\KGHTechelle{#1},%
+	Variables=\def\KGHTvariables{#1},%
+	Epaisseur=\def\KGHThick{#1},%
+	CouleurCases=\def\KGHTCoulCases{#1},%
+	Couleur=\def\KGHTCoul{#1},%
+	PosVarLaterale=\def\KGHTPosVarA{#1},%
+	CouleurLegende=\def\KGHTCoulLegende{#1}
+}
+
+\setKVdefault[tblkgh]{%
+	Unite=1cm,%
+	Variables=a/b/c,%
+	Swap=false,%
+	Aide=false,%
+	Epaisseur=0.75pt,%
+	CouleurCases=lightgray,%
+	Legende=true,%
+	Couleur=black,%
+	PosVarLaterale=Gauche,%
+	CouleurLegende=black
+}
+
+\NewDocumentEnvironment{TableKarnaugh}{ O{} D<>{} }%
+{%
+	\useKVdefault[tblkgh]%
+	\setKV[tblkgh]{#1}%
+	\setsepchar[.]{/}%
+	\readlist*\ListeVariablesKGH\KGHTvariables%
+	\IfSubStr{\KGHTCoulLegende}{/}%
+		{%
+			\StrBefore[1]{\KGHTCoulLegende}{/}[\KGHTCoulLegendeA]%
+			\StrBetween[1,2]{\KGHTCoulLegende}{/}{/}[\KGHTCoulLegendeB]%
+			\StrBehind[2]{\KGHTCoulLegende}{/}[\KGHTCoulLegendeC]%
+		}%
+		{%
+			\def\KGHTCoulLegendeA{\KGHTCoulLegende}%
+			\def\KGHTCoulLegendeB{\KGHTCoulLegende}%
+			\def\KGHTCoulLegendeC{\KGHTCoulLegende}%
+		}%
+	\begin{tikzpicture}[x=\KGHTechelle,y=\KGHTechelle,line join=miter,#2]
+		\coordinate (A00) at (0,0) ; \coordinate (A10) at (1,0) ;
+		\coordinate (A20) at (2,0) ; \coordinate (A30) at (3,0) ;
+		\coordinate (A40) at (4,0) ; \coordinate (A01) at (0,1) ;
+		\coordinate (A11) at (1,1) ; \coordinate (A21) at (2,1) ;
+		\coordinate (A31) at (3,1) ; \coordinate (A41) at (4,1) ;
+		\coordinate (A02) at (0,2) ; \coordinate (A12) at (1,2) ;
+		\coordinate (A22) at (2,2) ; \coordinate (A32) at (3,2) ;
+		\coordinate (A42) at (4,2) ;
+		\ifboolKV[tblkgh]{Legende}
+			{%
+				\draw[\KGHTCoulLegendeB,line width=\KGHThick,decorate,decoration={brace,amplitude=7pt}](0,2.1)--(2,2.1) node[midway,above=7pt,inner sep=1pt,text=\KGHTCoulLegendeB,outer sep=0pt] {$\strut\mathtt{\ListeVariablesKGH[2]}$};
+				\draw[\KGHTCoulLegendeB,line width=\KGHThick,decorate,decoration={brace,amplitude=7pt}](2,2.1)--(4,2.1) node[midway,above=7pt,inner sep=1pt,text=\KGHTCoulLegendeB,outer sep=0pt] {$\strut\mathtt{\overline{\ListeVariablesKGH[2]}}$};
+				\ifboolKV[tblkgh]{Swap}%
+					{%
+						\draw[\KGHTCoulLegendeC,line width=\KGHThick,decorate,decoration={brace,amplitude=7pt,mirror}](1,-0.1)--(3,-0.1) node[midway,below=7pt,inner sep=1pt,text=\KGHTCoulLegendeC,outer sep=0pt] {$\strut\mathtt{\ListeVariablesKGH[3]}$};
+						\node[\KGHTCoulLegendeC,inner sep=1pt,below=7pt,outer sep=0pt] at (0.5,-0.1) {$\strut\mathtt{\overline{\ListeVariablesKGH[3]}}$};
+						\node[\KGHTCoulLegendeC,inner sep=1pt,below=7pt,outer sep=0pt] at (3.5,-0.1) {$\strut\mathtt{\overline{\ListeVariablesKGH[3]}}$};
+					}%
+					{%
+						\draw[\KGHTCoulLegendeC,line width=\KGHThick,decorate,decoration={brace,amplitude=7pt,mirror}](1,-0.1)--(3,-0.1) node[midway,below=7pt,inner sep=1pt,text=\KGHTCoulLegendeC,outer sep=0pt] {$\strut\mathtt{\overline{\ListeVariablesKGH[3]}}$};
+						\node[\KGHTCoulLegendeC,inner sep=1pt,below=7pt,outer sep=0pt] at (0.5,-0.1) {$\strut\mathtt{\ListeVariablesKGH[3]}$};
+						\node[\KGHTCoulLegendeC,inner sep=1pt,below=7pt,outer sep=0pt] at (3.5,-0.1) {$\strut\mathtt{\ListeVariablesKGH[3]}$};
+					}%
+				\IfStrEq{\KGHTPosVarA}{Gauche}
+					{%
+						\node[\KGHTCoulLegendeA,inner sep=1pt,outer sep=0pt,left=8pt] at (0,0.5) {$\strut\mathtt{\overline{\ListeVariablesKGH[1]}}$};
+						\node[\KGHTCoulLegendeA,inner sep=1pt,outer sep=0pt,left=8pt] at (0,1.5) {$\strut\mathtt{\ListeVariablesKGH[1]}$};
+					}{}%
+				\IfStrEq{\KGHTPosVarA}{Droite}
+					{%
+						\node[\KGHTCoulLegendeA,inner sep=1pt,outer sep=0pt,right=8pt] at (4,0.5) {$\strut\mathtt{\overline{\ListeVariablesKGH[1]}}$};
+						\node[\KGHTCoulLegendeA,inner sep=1pt,outer sep=0pt,right=8pt] at (4,1.5) {$\strut\mathtt{\ListeVariablesKGH[1]}$};
+					}{}%
+			}%
+			{}%
+		\draw[line width=\KGHThick,step=1,ystep=1,\KGHTCoul] (0,0) grid (4,2) ; \draw[line width=\KGHThick,\KGHTCoul] (0,0) rectangle (4,2) ;
+	}%
+	{%
+		\ifboolKV[tblkgh]{Aide}%
+			{%
+				\foreach \noeud in {00,10,20,30,40,01,11,21,31,41,02,12,22,32,42}
+					{%
+						\draw (A\noeud) node[gray,inner sep=1pt,fill=yellow,text=red,outer sep=0pt,font=\tiny\sffamily,scale=0.75] {A\noeud} ;
+					}%
+			}{}%
+	\end{tikzpicture}
+}%
+
+\defKV[blockarnaugh]{%
+	Decalage=\def\KGHdecalage{#1},%
+	Couleur=\def\KGHcouleur{#1},%
+	Type=\def\KGHtype{#1}
+}
+
+\setKVdefault[blockarnaugh]{%
+	Decalage=2pt,%
+	Couleur=red,%
+	Type=Centre
+}
+
+\newcommand\KarnaughBlocCoul[2][lightgray]{%
+	\setsepchar[.]{,./}%
+	\readlist*\KGHListeRect{#2}%
+	\xintFor* ##1 in {\xintSeq{1}{\KGHListeRectlen}}\do{%
+		\draw[line width=\KGHThick,fill=#1] (A\KGHListeRect[##1,1]) rectangle (A\KGHListeRect[##1,2]) ;
+		\draw[line width=\KGHThick] (A\KGHListeRect[##1,1]) grid (A\KGHListeRect[##1,2]) ;
+	}%
+}
+
+\NewDocumentCommand\KarnaughCasesResult{ s m }{%
+	\setsepchar{,}%
+	\readlist*\KGHListeResult{#2}%
+	\IfBooleanTF{#1}%
+		{%
+			\xintifboolexpr{\KGHListeResult[1] == 1}{\draw[line width=\KGHThick,fill=\KGHTCoulCases,draw=\KGHTCoul] (A01) rectangle (A12) ;}{}%
+			\xintifboolexpr{\KGHListeResult[2] == 1}{\draw[line width=\KGHThick,fill=\KGHTCoulCases,draw=\KGHTCoul] (A11) rectangle (A22) ;}{}%
+			\xintifboolexpr{\KGHListeResult[3] == 1}{\draw[line width=\KGHThick,fill=\KGHTCoulCases,draw=\KGHTCoul] (A21) rectangle (A32) ;}{}%
+			\xintifboolexpr{\KGHListeResult[4] == 1}{\draw[line width=\KGHThick,fill=\KGHTCoulCases,draw=\KGHTCoul] (A31) rectangle (A42) ;}{}%
+			\xintifboolexpr{\KGHListeResult[5] == 1}{\draw[line width=\KGHThick,fill=\KGHTCoulCases,draw=\KGHTCoul] (A00) rectangle (A11) ;}{}%
+			\xintifboolexpr{\KGHListeResult[6] == 1}{\draw[line width=\KGHThick,fill=\KGHTCoulCases,draw=\KGHTCoul] (A10) rectangle (A21) ;}{}%
+			\xintifboolexpr{\KGHListeResult[7] == 1}{\draw[line width=\KGHThick,fill=\KGHTCoulCases,draw=\KGHTCoul] (A20) rectangle (A31) ;}{}%
+			\xintifboolexpr{\KGHListeResult[8] == 1}{\draw[line width=\KGHThick,fill=\KGHTCoulCases,draw=\KGHTCoul] (A30) rectangle (A41) ;}{}%
+		}%
+		{%
+			\draw (0.5,1.5) node[text=\KGHTCoulCases!50!black,font=\large\ttfamily] {\KGHListeResult[1]} ;
+			\draw (1.5,1.5) node[text=\KGHTCoulCases!50!black,font=\large\ttfamily] {\KGHListeResult[2]} ;
+			\draw (2.5,1.5) node[text=\KGHTCoulCases!50!black,font=\large\ttfamily] {\KGHListeResult[3]} ;
+			\draw (3.5,1.5) node[text=\KGHTCoulCases!50!black,font=\large\ttfamily] {\KGHListeResult[4]} ;
+			\draw (0.5,0.5) node[text=\KGHTCoulCases!50!black,font=\large\ttfamily] {\KGHListeResult[5]} ;
+			\draw (1.5,0.5) node[text=\KGHTCoulCases!50!black,font=\large\ttfamily] {\KGHListeResult[6]} ;
+			\draw (2.5,0.5) node[text=\KGHTCoulCases!50!black,font=\large\ttfamily] {\KGHListeResult[7]} ;
+			\draw (3.5,0.5) node[text=\KGHTCoulCases!50!black,font=\large\ttfamily] {\KGHListeResult[8]} ;
+		}%
+}
+
+\newcommand\KarnaughBlocRegroup[3][]{%
+	\useKVdefault[blockarnaugh]%
+	\setKV[blockarnaugh]{#1}%
+	\IfStrEq{\KGHtype}{Centre}%
+		{\draw[rounded corners,line width=1.25pt,color=\KGHcouleur] ($(A#2)+(-\KGHdecalage,-\KGHdecalage)$) rectangle ($(A#3)+(\KGHdecalage,\KGHdecalage)$);}%
+		{}%
+	\IfStrEq{\KGHtype}{Gauche}%#2=BG #3=HD
+		{%
+			\StrChar{#2}{1}[\KGHia]%
+			\StrChar{#2}{2}[\KGHja]%
+			\StrChar{#3}{1}[\KGHib]%
+			\StrChar{#3}{2}[\KGHjb]%
+			\draw[rounded corners,line width=1.25pt,color=\KGHcouleur]%
+			($(A#2)+(-\KGHdecalage,-\KGHdecalage)$) -- ($(A\KGHib\KGHja)+(\KGHdecalage,-\KGHdecalage)$)%
+			-- ($(A#3)+(\KGHdecalage,\KGHdecalage)$) -- ($(A\KGHia\KGHjb)+(-\KGHdecalage,\KGHdecalage)$);%
+		}%
+		{}%
+	\IfStrEq{\KGHtype}{Droite}%#2=BD #3=HG
+		{%
+			\StrChar{#2}{1}[\KGHia]%
+			\StrChar{#2}{2}[\KGHja]%
+			\StrChar{#3}{1}[\KGHib]%
+			\StrChar{#3}{2}[\KGHjb]%
+			\draw[rounded corners,line width=1.25pt,color=\KGHcouleur]%
+			($(A#2)+(\KGHdecalage,-\KGHdecalage)$) -- ($(A\KGHib\KGHja)+(-\KGHdecalage,-\KGHdecalage)$)%
+			-- ($(A#3)+(-\KGHdecalage,\KGHdecalage)$) -- ($(A\KGHia\KGHjb)+(\KGHdecalage,\KGHdecalage)$);%
+		}%
+		{}%
+}
+
+\endinput

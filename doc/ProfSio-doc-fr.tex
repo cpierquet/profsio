@@ -1,0 +1,759 @@
+% !TeX TXS-program:compile = txs:///arara
+% arara: pdflatex: {shell: yes, synctex: no, interaction: batchmode}
+% arara: pdflatex: {shell: yes, synctex: no, interaction: batchmode} if found('log', '(undefined references|Please rerun|Rerun to get)')
+
+\documentclass[french,a4paper,11pt]{article}
+\usepackage[margin=2cm,includefoot]{geometry}
+\def\TPversion{0.1.0}
+\def\TPdate{22 juin 2023}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb}
+\usepackage{ProfSio}
+\usepackage{awesomebox}
+\usepackage{fontawesome5}
+\usepackage{footnote}
+\makesavenoteenv{tabular}
+\usepackage{enumitem}
+\usepackage{wrapstuff}
+\usepackage{lipsum}
+\usepackage{fancyvrb}
+\usepackage{fancyhdr}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\lfoot{\sffamily\small [ProfSio]}
+\cfoot{\sffamily\small - \thepage{} -}
+\rfoot{\hyperlink{matoc}{\small\faArrowAltCircleUp[regular]}}
+
+%\usepackage{hvlogos}
+\usepackage{hologo}
+\providecommand\tikzlogo{Ti\textit{k}Z}
+\providecommand\TeXLive{\TeX{}Live\xspace}
+\providecommand\PSTricks{\textsf{PSTricks}\xspace}
+\let\pstricks\PSTricks
+\let\TikZ\tikzlogo
+\newcommand\TableauDocumentation{%
+	\begin{tblr}{width=\linewidth,colspec={X[c]X[c]X[c]X[c]X[c]X[c]},cells={font=\sffamily}}
+		{\LARGE \LaTeX} & & & & &\\
+		& {\LARGE \hologo{pdfLaTeX}} & & & & \\
+		& & {\LARGE \hologo{LuaLaTeX}} & & & \\
+		& & & {\LARGE \TikZ} & & \\
+		& & & & {\LARGE \TeXLive} & \\
+		& & & & & {\LARGE \hologo{MiKTeX}} \\
+	\end{tblr}
+}
+
+\usepackage{hyperref}
+\urlstyle{same}
+\hypersetup{pdfborder=0 0 0}
+\setlength{\parindent}{0pt}
+\definecolor{LightGray}{gray}{0.9}
+
+\usepackage{babel}
+\AddThinSpaceBeforeFootnotes
+\FrenchFootnotes
+
+\usepackage{listings}
+
+\usepackage{newverbs}
+\newverbcommand{\motcletex}{\color{cyan!75!black}}{}
+\newverbcommand{\packagetex}{\color{violet!75!black}}{}
+
+\usepackage[most]{tcolorbox}
+\tcbuselibrary{listingsutf8}
+\newtcblisting{DemoCode}[1][]{%
+	enhanced,width=0.95\linewidth,center,%
+	bicolor,size=title,%
+	colback=cyan!2!white,%
+	colbacklower=cyan!1!white,%
+	colframe=cyan!75!black,%
+	listing options={%
+		breaklines=true,%
+		breakatwhitespace=true,%
+		style=tcblatex,basicstyle=\small\ttfamily,%
+		tabsize=4,%
+		commentstyle={\itshape\color{gray}},
+		keywordstyle={\color{blue}},%
+		classoffset=0,%
+		keywords={},%
+		alsoletter={-},%
+		keywordstyle={\color{blue}},%
+		classoffset=1,%
+		alsoletter={-},%
+		morekeywords={center,justify,\lipsum},%
+		keywordstyle={\color{violet}},%
+		classoffset=2,%
+		alsoletter={-},%
+		morekeywords={\MPMPlaceTache,\MPMPlaceNotice,\MPMPlaceDuree,GrapheMPM,TableKarnaugh,\KarnaughCasesResult,\KarnaughBlocRegroup,\MPMPlaceTaches,\MPMPlaceDurees},%
+		keywordstyle={\color{green!50!black}},%
+		classoffset=3,%
+		morekeywords={CouleurDurees,CouleurFleches,LargeurCases,Epaisseur,Police,CouleurDates,CouleurBords,NoirBlanc,Grille,DecalHorizDeb,DecalVertDeb,DecalHorizFin,DecalVertFin,Coude,SensCoude,Unite,Variables,Swap,Aide,CouleurCases,Decalage,Couleur,Type,Legende,PosVarLaterale,CouleurLegende},%
+		keywordstyle={\color{orange}}
+	},%
+	#1
+}
+
+\tcbset{vignettes/.style={%
+	nobeforeafter,box align=base,boxsep=0pt,enhanced,sharp corners=all,rounded corners=southeast,%
+	boxrule=0.75pt,left=7pt,right=1pt,top=0pt,bottom=0.25pt,%
+	}
+}
+
+\tcbset{vignetteMaJ/.style={%
+	fontupper={\vphantom{pf}\footnotesize\ttfamily},
+	vignettes,colframe=purple!50!black,coltitle=white,colback=purple!10,%
+	overlay={\begin{tcbclipinterior}%
+			\fill[fill=purple!75]($(interior.south west)$) rectangle node[rotate=90]{\tiny \sffamily{\textcolor{black}{\scalebox{0.66}[0.66]{\textbf{MàJ}}}}} ($(interior.north west)+(5pt,0pt)$);%
+	\end{tcbclipinterior}}
+	}
+}
+
+\newcommand\Cle[1]{{\small\sffamily\textlangle \textcolor{orange}{#1}\textrangle}}
+\newcommand\cmaj[1]{\tcbox[vignetteMaJ]{#1}\xspace}
+
+\begin{document}
+
+\setlength{\aweboxleftmargin}{0.07\linewidth}
+\setlength{\aweboxcontentwidth}{0.93\linewidth}
+\setlength{\aweboxvskip}{8pt}
+
+\pagestyle{fancy}
+
+\thispagestyle{empty}
+
+\vspace{2cm}
+
+\begin{center}
+	\begin{minipage}{0.75\linewidth}
+	\begin{tcolorbox}[colframe=yellow,colback=yellow!15]
+		\begin{center}
+			\begin{tabular}{c}
+				{\Huge \texttt{ProfSio} [fr]}\\
+				\\
+				{\LARGE Des outils pour} \\
+				\\
+				{\LARGE les Maths en BTS SIO.} \\
+			\end{tabular}
+			
+			\bigskip
+			
+			{\small \texttt{Version \TPversion{} -- \TPdate}}
+		\end{center}
+	\end{tcolorbox}
+\end{minipage}
+\end{center}
+
+\begin{center}
+	\begin{tabular}{c}
+	\texttt{Cédric Pierquet}\\
+	{\ttfamily c pierquet -- at -- outlook . fr}\\
+	\texttt{\url{https://github.com/cpierquet/profsio}}
+\end{tabular}
+\end{center}
+
+\vspace{0.25cm}
+
+{$\blacktriangleright$~~Créer des diagrammes MPM (de manière manuelle, pas de calculs ou placements automatiques).}
+
+\vspace{0.25cm}
+
+{$\blacktriangleright$~~Créer des tables de Karnaugh avec mise en valeur (manuelle) des regroupements.}
+
+\vspace{1cm}
+
+\hfill
+\begin{GrapheMPM}[LargeurCases=0.5cm]
+	%NOTICE
+	\MPMPlaceNotice(1,6.5)
+	%SOMMETS
+	\MPMPlaceTache(1,4)(Début)(0,0)
+	\MPMPlaceTache(3.25,4)(COM)(0,0)
+	\MPMPlaceTache(5.5,4)(LOG)(1,2)
+	\MPMPlaceTache(5.5,2)(ECR)(1,1)
+	\MPMPlaceTache(5.5,7)(MAT)(1,2{,}5)
+	\MPMPlaceTache(7.75,7)(CABL)(2,4)
+	\MPMPlaceTache(7.75,5.5)(ASS)(2,3{,}5)
+	\MPMPlaceTache(10,4)(INST)(4,5)
+	\MPMPlaceTache(12.25,4)(POST)(7,7)
+	\MPMPlaceTache(14.5,4)(CONF)(8,8)
+	\MPMPlaceTache(16.75,4)(Fin)(9,9)
+%	%ARCS
+	\MPMPlaceDuree{Début>COM,0}
+	\MPMPlaceDuree{COM>MAT,1}\MPMPlaceDuree{COM>LOG,1}\MPMPlaceDuree{COM>ECR,1}
+	\MPMPlaceDuree{MAT>CABL,1}\MPMPlaceDuree{MAT>ASS,1}
+	\MPMPlaceDuree{LOG>INST,3}
+	\MPMPlaceDuree[Coude]{ECR>POST,6}<near start>
+	\MPMPlaceDuree[Coude]{CABL>CONF,4}<near start>
+	\MPMPlaceDuree{ASS>INST,1{,}5}
+	\MPMPlaceDuree{INST>POST,2}
+	\MPMPlaceDuree{POST>CONF,1}
+	\MPMPlaceDuree{CONF>Fin,1}
+\end{GrapheMPM}
+\hfill~
+
+\hfill
+\begin{TableKarnaugh}
+	\KarnaughCasesResult{0,1,1,0,1,1,1,1}
+	\KarnaughBlocRegroup[Type=Centre,Couleur=blue!75,Decalage=-1.5pt]{10}{32}
+	\KarnaughBlocRegroup[Type=Gauche,Couleur=red!75,Decalage=-1.5pt]{00}{11}
+	\KarnaughBlocRegroup[Type=Droite,Couleur=red!75,Decalage=-1.5pt]{40}{31}
+\end{TableKarnaugh}
+\hspace{1cm}
+\begin{TableKarnaugh}[Variables=u/v/w,Swap,CouleurCases=lime]
+	\KarnaughCasesResult*{1,1,1,1,1,0,0,0}
+	\KarnaughBlocRegroup[Type=Centre,Couleur=blue!75,Decalage=-1.5pt]{00}{12}
+	\KarnaughBlocRegroup[Type=Centre,Couleur=red!75,Decalage=-1.15pt]{01}{42}
+\end{TableKarnaugh}
+\hfill~
+
+\vspace{0.5cm}
+
+%\hfill{}\textit{Merci à Patrick Bideault pour ses retours et conseils !}
+
+%\smallskip
+
+\vfill
+
+\hrule
+
+\medskip
+
+\TableauDocumentation
+
+\medskip
+
+\hrule
+
+\medskip
+
+\newpage
+
+\phantomsection
+\hypertarget{matoc}{}
+
+\tableofcontents
+
+\vfill
+
+\section{Historique}
+
+\verb|v0.1.0|~:~~~~Version initiale.
+
+\newpage
+
+\section{Le package ProfSio}
+
+\subsection{Introduction}
+
+\begin{noteblock}
+Le package \packagetex!ProfSio! propose quelques commandes pour travailler sur des points particuliers de Mathématiques enseignées en BTS SIO :
+
+\begin{itemize}
+	\item graphe d'ordonnancement par la méthode MPM ;
+	\item tableau de Karnaugh à 3 variables.
+\end{itemize}
+\vspace*{-\baselineskip}\leavevmode
+\end{noteblock}
+
+\begin{warningblock}
+Le code ne propose par de \og résolution \fg{} du graphe MPM ou de \og simplification \fg{} d'expressions booléennes, il ne consiste \textit{qu'en} une mise en forme du graphe MPM ou du tableau de Karnaugh.
+\end{warningblock}
+
+\subsection{Chargement du package, packages utilisés}
+
+\begin{importantblock}
+Le package se charge, de manière classique, dans le préambule.
+
+Il n'existe pas d'option pour le package, et \packagetex!xcolor! n'est pas chargé.
+\end{importantblock}
+
+\begin{DemoCode}[listing only]
+\documentclass{article}
+\usepackage{ProfSio}
+
+\end{DemoCode}
+
+\begin{noteblock}
+\packagetex!ProfSio! charge les packages suivantes :
+
+\begin{itemize}
+	\item \packagetex!tikz!, \packagetex!pgffor! et \packagetex!xintexpr! ;
+	\item \packagetex!tabularray!, \packagetex!simplekv!, \packagetex!xstring! et \packagetex!listofitems! ;
+	\item les librairies \packagetex!tikz! :
+	\begin{itemize}
+		\item \motcletex!tikz.positioning!
+		\item \motcletex!tikz.decorations.pathreplacing! ;
+		\item \motcletex!tikz.decorations.markings! ;
+		\item \motcletex!tikz.babel! ;
+		\item \motcletex!tikz.calc! ;
+		\item \motcletex!tikz.arrows!.
+	\end{itemize}
+\end{itemize}
+
+Il est compatible avec les compilations usuelles en \textsf{latex}, \textsf{pdflatex}, \textsf{lualatex} ou \textsf{xelatex}.
+\end{noteblock}
+
+\subsection{Fonctionnement global}
+
+\begin{tipblock}
+Les environnements sont créés avec \TikZ, et la majorité des paramètres des tracés sont personnalisables :
+
+\begin{itemize}
+	\item couleurs ;
+	\item dimensions.
+\end{itemize}
+\vspace*{-\baselineskip}\leavevmode
+\end{tipblock}
+
+\begin{noteblock}
+Le choix a été fait de :
+
+\begin{itemize}
+	\item présenter l'ordonnancement par la méthode MPM, avec présentation des tâches \textit{fixée} ;
+	\item limiter les tableaux de Karnaugh pour 3 variables, avec présentation \textit{fixée} ;
+	\item de ne pas proposer de modification de la présentation \textit{globale}
+\end{itemize}
+\vspace*{-\baselineskip}\leavevmode
+\end{noteblock}
+
+\pagebreak
+
+\section{Graphe d'ordonnancement par méthode MPM}
+
+\subsection{Commande et fonctionnement global}
+
+\begin{cautionblock}
+L'environnement dédié à la création du graphe d'ordonnancement est \motcletex!GrapheMPM!.
+
+C'est en fait un environnement \motcletex!tikzpicture! personnalisé.
+
+\smallskip
+
+Les commandes à utiliser dans l'environnement sont :
+
+\begin{itemize}
+	\item \motcletex!\MPMPlaceNotice! ;
+	\item \motcletex!\MPMPlaceTache! ou \motcletex!\MPMPlaceTaches! ;
+	\item \motcletex!\MPMPlaceDuree! ou \motcletex!\MPMPlaceDurees!.
+\end{itemize}
+\vspace*{-\baselineskip}\leavevmode
+\end{cautionblock}
+
+\begin{DemoCode}[listing only]
+\begin{GrapheMPM}[clés]<options tikz>
+	\MPMPlaceNotice(*)(coordonnées)
+	\MPMPlaceTache(coordonnées)(Tâche)(Dates)
+	\MPMPlaceTaches{ (coordA)(TâcheA)(DatesA) / (coordB)(TâcheB)(DatesB) / ... }
+	\MPMPlaceDuree[clés]{TâcheA>TâcheB,durée}<options tikz>
+	\MPMPlaceDurees[clés]{TâcheA>TâcheB,durée / TâcheC>TâcheD,durée }<options tikz>
+\end{GrapheMPM}
+\end{DemoCode}
+
+\begin{DemoCode}[]
+\begin{GrapheMPM}
+	\MPMPlaceNotice(-2,2.15)
+	\MPMPlaceTaches{ (0,0)(F)(2,4) / (3,1)(G)(5,7) / (6,0.5)(L)(9,9) }
+	\MPMPlaceDurees{F>G,1 / G>L,2}
+	\MPMPlaceDuree[Coude,SensCoude=VHV]{F.south>L.south,4}<near start>
+\end{GrapheMPM}
+\end{DemoCode}
+
+\begin{tipblock}
+Les tâches sont créées sous forme de \textit{tableau} et sont associées à des nœuds, nœuds qui servent ensuite à positionner les durées des tâches.
+\end{tipblock}
+
+\pagebreak
+
+\subsection{Arguments et clés pour l'environnement}
+
+\begin{DemoCode}[listing only]
+\begin{GrapheMPM}[clés]<options tikz>
+	%commandes
+\end{GrapheMPM}
+\end{DemoCode}
+
+\begin{tipblock}
+En ce qui concerne la création de l'environnement, les \Cle{clés} sont :
+
+\begin{itemize}
+	\item \Cle{CouleurDurees} := couleur des durée ; \hfill~défaut : \Cle{purple}
+	\item \Cle{CouleurFleches} := couleur des arcs ; \hfill~défaut : \Cle{blue}
+	\item \Cle{LargeurCases} := largeur des cases ; \hfill~défaut : \Cle{0.75cm}
+	\item \Cle{Epaisseur} := épaisseur des traits (bordures et arcs) ; \hfill~défaut : \Cle{0.75pt}
+	\item \Cle{Police} := police globale ; \hfill~défaut : \Cle{\textbackslash footnotesize\textbackslash sffamily}
+	\item \Cle{CouleurDates} := couleur des dates, sous la forme \Cle{Couleur} ou \Cle{Couleur\_t/Couleur\_T} ;
+	
+	\hfill~défaut : \Cle{teal/red}
+	\item \Cle{CouleurBords} := couleur des bordures ; \hfill~défaut : \Cle{black}
+	\item \Cle{NoirBlanc} := booléen pour tout passer en Noir \&{} Blanc ; \hfill~défaut : \Cle{false}
+	\item \Cle{Grille} := pour afficher une grille d'aide (\Cle{\{xmax,ymax\}}), entre (0;\,0) et (xmax;\,ymax).
+	
+	\hfill~défaut : \Cle{vide}
+\end{itemize}
+
+Le deuxième argument, optionnel et entre \texttt{<...>} propose des options, en langage \packagetex!tikz! à passer à l'environnement.
+\end{tipblock}
+
+\begin{DemoCode}[]
+\begin{GrapheMPM}[Grille={14,5}]
+	%commandes
+\end{GrapheMPM}
+\end{DemoCode}
+
+\pagebreak
+
+\subsection{Arguments et clés pour les tâches}
+
+\begin{DemoCode}[listing only]
+\begin{GrapheMPM}[clés]<options tikz>
+	\MPMPlaceNotice(*)(coordonnées)
+	\MPMPlaceTache(coordonnées)(Tâche)(Dates)
+	\MPMPlaceTaches{ (coordA)(TâcheA)(DatesA) / (coordB)(TâcheB)(DatesB) / ... }
+\end{GrapheMPM}
+\end{DemoCode}
+
+\begin{tipblock}
+La commande \motcletex!\MPMPlaceNotice! permet de placer une \textit{notice} :
+
+\begin{itemize}
+	\item la version \textit{étoilée} affiche la notice complète, avec les dates et les marges (MT et ML) ;
+	\item les coordonnées sont à donner sous la forme \verb!x,y!.
+\end{itemize}
+\vspace*{-\baselineskip}\leavevmode
+\end{tipblock}
+
+\begin{tipblock}
+La commande \motcletex!\MPMPlaceTache! permet de placer une tâche :
+
+\begin{itemize}
+	\item argument n°1 := coordonnées sont à donner sous la forme \verb!x,y!.
+	\item argument n°2 := nom de la tâche, qui sera également le nom du nœud ;
+	\item argument n°3 := dates (et marges éventuelles) sous la forme :
+	\begin{itemize}
+		\item \verb!t,T! pour une tâche présentée de manière \textit{simple} ;
+		\item \verb!t,T,MT,ML! pour une tâche présentée de manière \textit{complète} ;
+	\end{itemize}
+\end{itemize}
+\vspace*{-\baselineskip}\leavevmode
+\end{tipblock}
+
+\begin{tipblock}
+La commande \motcletex!\MPMPlaceTaches! permet de placer plusieurs tâches en utilisant la syntaxe de la commande précédente, les éléments de la liste étant séparés par le caractère \verb!/!.
+\end{tipblock}
+
+\begin{DemoCode}[]
+\begin{GrapheMPM}[CouleurDates=green/orange,CouleurBords=brown,Grille={18,8}]%
+	<scale=0.75,transform shape>
+	%NOTICE
+	\MPMPlaceNotice(1,6.5)
+	%TACHES INDIVIDUELLES
+	\MPMPlaceTache(1,4)(Début)(0,0)
+	\MPMPlaceTache(3.25,4)(COM)(0,0)
+	%TACHES MULTIPLES
+	\MPMPlaceTaches{ (5.5,4)(LOG)(1,2) / (5.5,2)(ECR)(1,1) / (5.5,7)(MAT)(1,2{,}5) / (7.75,7)(CABL)(2,4) / (7.75,5.5)(ASS)(2,3{,}5) / (10,4)(INST)(4,5) / (12.25,4)(POST)(7,7) / (14.5,4)(CONF)(8,8) / (16.75,4)(Fin)(9,9) }
+\end{GrapheMPM}
+\end{DemoCode}
+
+\pagebreak
+
+\subsection{Arguments et clés pour les tâches}
+
+\begin{DemoCode}[listing only]
+\begin{GrapheMPM}[clés]<options tikz>
+	%DÉCLARATION DES TÂCHES
+	\MPMPlaceDuree[clés]{TâcheA>TâcheB,durée}<options tikz>
+\end{GrapheMPM}
+\end{DemoCode}
+
+\begin{tipblock}
+La commande \motcletex!\MPMPlaceDuree! permet de placer un arc avec la durée de la tâche.
+
+\smallskip
+
+La commande propose les \Cle{clés} suivantes :
+
+\begin{itemize}
+	\item \Cle{Coude} := booléen pour affiche l'arc sous forme d'un coude ; \hfill~défaut : \Cle{false}
+	\item \Cle{SensCoude} := permet de préciser le type de coude, parmi \Cle{HV / VH / VHV} ;
+	
+	\hfill~défaut : \Cle{HV}
+	\item \Cle{HauteurCoude} := dans le cas \Cle{SensCoude=VHV}, permet de préciser le 1\ier{} décalage V ;
+	
+	\hfill~défaut : \Cle{10pt}
+	\item \Cle{DecalHorizDeb} := décalage horizontal du début de l'arc pour la tâche de départ ;
+	\item \Cle{DecalVertDeb} := décalage vertical du début de l'arc pour la tâche de départ ;
+	\item \Cle{DecalHorizDeb} := décalage horizontal de la fin de l'arc pour la tâche d'arrivée ;
+	\item \Cle{DecalVertFin} := décalage vertical de la fin de l'arc pour la tâche d'arrivée.
+	
+	\hfill~défaut : \Cle{0pt}
+\end{itemize}
+
+Le second argument, obligatoire et entre \texttt{\{...\}} permet de spécifier les paramètres de l'arc, sous la forme \verb!TâcheDépart>TâcheArrivée,durée!.
+
+\smallskip
+
+Le troisième argument, optionnel et entre \texttt{<...>} et valant \motcletex!midway! par défaut, permet de spécifier une position différente (en langage \packagetex!tikz!) de la durée (comme par exemple \motcletex!near start!, \motcletex!near end! ou \motcletex!pos=...!).
+\end{tipblock}
+
+\begin{noteblock}
+Les nœuds créés précédemment permettent donc de spécifier les arguments de la commande, et \textit{tout point d'ancrage} des nœuds peuvent être utilisés pour la commande.
+
+\smallskip
+
+On rappelle que les principaux points d'ancrage d'un nœud \verb!(NOEUD)! \TikZ{} sont :
+
+\begin{itemize}[leftmargin=*]
+	\item {\small \verb!(NOEUD.north)!}, {\small \verb!(NOEUD.east)!}, {\small \verb!(NOEUD.south)!}, {\small \verb!(NOEUD.west)!} ;
+	\item {\small \verb!(NOEUD.north east)!}, {\small \verb!(NOEUD.south east)!}, {\small \verb!(NOEUD.south west)!}, {\small \verb!(NOEUD.north west)!}.
+\end{itemize}
+\vspace*{-\baselineskip}\leavevmode
+\end{noteblock}
+
+\begin{DemoCode}[text only]
+\begin{GrapheMPM}<scale=1.75,transform shape>
+	\MPMPlaceTache(3.25,4)(COM)(0,0)
+	\foreach \Pos/\Label in {north/above,east/right,south/below,west/left,north east/above right,south east/below right,south west/below left,north west/above left}
+		{\filldraw[lightgray] (COM.\Pos) circle[radius=1.75pt] node[font=\scriptsize\ttfamily,\Label] {(COM.\Pos)} ;}
+\end{GrapheMPM}
+\end{DemoCode}
+
+\begin{warningblock}
+Par défaut, les arcs pointent vers le \textit{centre} du nœud, donc dans le cas d'arcs \textit{coudés}, on peut utiliser des points d'ancrage pour une position optimale des arcs.
+\end{warningblock}
+
+\pagebreak
+
+\begin{DemoCode}[]
+\begin{GrapheMPM}[LargeurCases=0.5cm]<scale=0.9,transform shape>
+	%TACHES MULTIPLES
+	\MPMPlaceTaches{ (1,4)(Début)(0,0) / (3.25,4)(COM)(0,0) / (5.5,4)(LOG)(1,2) / (5.5,2)(ECR)(1,1) / (5.5,7)(MAT)(1,2{,}5) / (7.75,7)(CABL)(2,4) / (7.75,5.5)(ASS)(2,3{,}5) / (10,4)(INST)(4,5) / (12.25,4)(POST)(7,7) / (14.5,4)(CONF)(8,8) / (16.75,4)(Fin)(9,9) }
+	\MPMPlaceDuree{COM>MAT,1}
+	\MPMPlaceDuree{COM>LOG,1}\MPMPlaceDuree{COM>ECR,1}
+	\MPMPlaceDuree{MAT>CABL,1}\MPMPlaceDuree{MAT>ASS,1}
+	\MPMPlaceDuree{LOG>INST,3}<pos=0.85>
+	\MPMPlaceDuree[Coude]{ECR>POST,6}<near start>
+	\MPMPlaceDuree[Coude]{CABL>CONF,4}<near end>
+\end{GrapheMPM}
+\end{DemoCode}
+
+\begin{tipblock}
+Dans le cas où plusieurs arcs ont les mêmes caractéristiques, on peut utiliser la commande de \textit{placement multiple}, \motcletex!\MPMPlaceDurees!, pour laquelle les \Cle{clés} et l'argument optionnel entre \texttt{<...>} seront passés à \textbf{tous} les arcs.
+
+\smallskip
+
+Dans ce cas, les données sont à spécifier sous forme d'une liste, avec le séparateur \texttt{/}.
+
+\smallskip
+
+Cela permet de \textit{condenser} le code, dans le cas où de multiples arcs ont les mêmes caractéristiques.
+\end{tipblock}
+
+\begin{DemoCode}[listing only]
+\begin{GrapheMPM}[clés]<options tikz>
+	%DÉCLARATION DES TÂCHES
+	\MPMPlaceDurees%
+		[clés globales]%
+		{TâcheA>TâcheB,durée / TâcheC>TâcheD,durée / ... }%
+		<options tikz globales>
+\end{GrapheMPM}
+\end{DemoCode}
+
+\pagebreak
+
+\subsection{Exemples}
+
+\begin{DemoCode}[]
+\begin{GrapheMPM}[LargeurCases=0.5cm]<scale=0.9,transform shape>
+	%NOTICE
+	\MPMPlaceNotice(1,6.5)
+	%TÂCHES
+	\MPMPlaceTaches{ (1,4)(Début)(0,0) / (3.25,4)(COM)(0,0) / (5.5,4)(LOG)(1,2) / (5.5,2)(ECR)(1,1) / (5.5,7)(MAT)(1,2{,}5) / (7.75,7)(CABL)(2,4) / (7.75,5.5)(ASS)(2,3{,}5) / (10,4)(INST)(4,5) / (12.25,4)(POST)(7,7) / (14.5,4)(CONF)(8,8) / (16.75,4)(Fin)(9,9) }
+	%DURÉES (ARCS DIRECTS)
+	\MPMPlaceDurees{Début>COM,0 / COM>MAT,1 / COM>LOG,1 / COM>ECR,1 / MAT>CABL,1 / MAT>ASS,1 / LOG>INST,3 / ASS>INST,1{,}5 / INST>POST,2 / POST>CONF,1 / CONF>Fin,1}
+	%DURÉES (ARCS COUDÉS)
+	\MPMPlaceDurees[Coude]{ECR>POST,6 / CABL>CONF,4}<near start>
+\end{GrapheMPM}
+\end{DemoCode}
+
+\begin{DemoCode}[]
+%ILLUSTRATION DES CLÉS [Decal...]
+\begin{GrapheMPM}[CouleurFleches=brown,CouleurDurees=purple,Police=\large\ttfamily]
+	%SOMMETS (EXTRAIT)
+	\MPMPlaceTaches{ (6.75,2)(O)(10,11) / (15.75,4.5)(N)(26,28) / (20.25,6)(P)(29,29) }
+	%ARCS (EXTRAIT)
+	\MPMPlaceDuree[Coude,DecalHorizFin=4pt]{O>P.south,8}<near start>
+	\MPMPlaceDuree[Coude,SensCoude=VHV,DecalHorizFin=-4pt]{N.south>P.south,1}<near start>
+\end{GrapheMPM}
+\end{DemoCode}
+
+\pagebreak
+
+\section{Tableau de Karnaugh à trois variables}
+
+\subsection{Commande et fonctionnement global}
+
+\begin{cautionblock}
+L'environnement dédié à la création du tableau de Karnaugh est \motcletex!TableKarnaugh!.
+
+C'est en fait un environnement \motcletex!tikzpicture! personnalisé.
+
+\smallskip
+
+Les commandes à utiliser dans l'environnement sont :
+
+\begin{itemize}
+	\item \motcletex!\KarnaughCasesResult! ;
+	\item \motcletex!\KarnaughBlocRegroup! ;.
+\end{itemize}
+\vspace*{-\baselineskip}\leavevmode
+\end{cautionblock}
+
+\begin{DemoCode}[listing only]
+\begin{TableKarnaugh}[clés]<options tikz>
+	\KarnaughCasesResult(*){contenu binaire des cases}
+	\KarnaughBlocRegroup[clés]{coinA}{coinB}
+\end{TableKarnaugh}
+\end{DemoCode}
+%
+%\begin{noteblock}
+%Les exemples suivants montrent déjà quelques possibilités de l'environnement, les commandes et clés seront bien évidemment détaillés dans les sous-sections suivantes.
+%\end{noteblock}
+
+\begin{DemoCode}[]
+\begin{TableKarnaugh}[Aide]
+\end{TableKarnaugh}
+\hspace{0.5cm}
+\begin{TableKarnaugh}[Variables=u/v/w]
+	\KarnaughCasesResult{0,1,1,0,1,1,1,1}
+	\KarnaughBlocRegroup[Type=Centre,Couleur=blue!75,Decalage=-1.5pt]{10}{32}
+	\KarnaughBlocRegroup[Type=Gauche,Couleur=red!75,Decalage=-1.5pt]{00}{11}
+	\KarnaughBlocRegroup[Type=Droite,Couleur=red!75,Decalage=-1.5pt]{40}{31}
+\end{TableKarnaugh}
+\hspace{0.5cm}
+\begin{TableKarnaugh}[Variables=u/v/w,Swap]
+\end{TableKarnaugh}
+
+\begin{center}
+	\begin{TableKarnaugh}[Legende=false,Unite=1.5cm,Epaisseur=1.5pt,Couleur=brown]
+	\end{TableKarnaugh}
+\end{center}
+\end{DemoCode}
+
+\begin{tipblock}
+Le tableau créé également des nœuds, qui seront utilisés pour effectuer des \textit{regroupements} de cases, afin de simplifier une expression booléenne.
+\end{tipblock}
+
+\pagebreak
+
+\subsection{Arguments et clés pour l'environnement}
+
+\begin{DemoCode}[listing only]
+\begin{TableKarnaugh}[clés]<options tikz>
+	%commandes
+\end{TableKarnaugh}
+\end{DemoCode}
+
+\begin{tipblock}
+En ce qui concerne la création de l'environnement, les \Cle{clés} sont :
+
+\begin{itemize}
+	\item \Cle{Couleur} := couleur du tableau ; \hfill~défaut : \Cle{black}
+	\item \Cle{Unite} := unité de base de la figure ; \hfill~défaut : \Cle{1cm}
+	\item \Cle{Variables} := nom des variables, sous la forme \Cle{Gauche/Haut/Bas} ; \hfill~défaut : \Cle{a/b/c}
+	\item \Cle{Swap} := booléen pour échanger les variables du \textit{bas} ; \hfill~défaut : \Cle{false}
+	\item \Cle{Aide} := booléen pour afficher une aide sur les noms des nœuds ; \hfill~défaut : \Cle{false}
+	\item \Cle{Epaisseur} := épaisseur des tracés ; \hfill~défaut : \Cle{0.75pt}
+	\item \Cle{CouleurCases} := couleur de remplissage des cases ; \hfill~défaut : \Cle{lightgray}
+	\item \Cle{CouleurLegende} := couleur de la légende, via \Cle{Couleur} ou \Cle{CouleurA/CouleurB/CouleurC} ;
+	
+	\hfill~défaut : \Cle{black}
+	\item \Cle{PosVarLaterale} := position de la variable \textit{latérale}.\hfill~défaut : \Cle{Gauche}
+\end{itemize}
+
+Le deuxième argument, optionnel et entre \texttt{<...>} propose des options, en langage \packagetex!tikz! à passer à l'environnement.
+\end{tipblock}
+
+\subsection{Arguments et clés pour la commande de remplissage}
+
+\begin{DemoCode}[listing only]
+\begin{TableKarnaugh}[clés]<options tikz>
+	\KarnaughCasesResult(*){contenu binaire des cases}
+\end{TableKarnaugh}
+\end{DemoCode}
+
+\begin{tipblock}
+En ce qui concerne le remplissage des cases :
+
+\begin{itemize}
+	\item la version \textit{étoilée} permet de \textit{griser} les cases au lieu de les remplir de \texttt{0/1} ;
+	\item l'argument obligatoire, et entre \texttt{\{....\}} est la liste des cases, de gauche à droite en partant de la ligne du haut ;
+	\item la couleur de cases est gérée par la clé idoine de l'environnement.
+\end{itemize}
+\vspace*{-\baselineskip}\leavevmode
+\end{tipblock}
+
+\subsection{Arguments et clés pour la commande de regroupement des blocs}
+
+\begin{DemoCode}[listing only]
+\begin{TableKarnaugh}[clés]<options tikz>
+	%remplissage des cases
+	\KarnaughBlocRegroup[clés]{coinA}{coinB}
+\end{TableKarnaugh}
+\end{DemoCode}
+
+\begin{tipblock}
+En ce qui concerne le regroupement des cases par blocs, les \Cle{clés} disponibles sont :
+
+\begin{itemize}
+	\item \Cle{Couleur} := couleur du \textit{trait} ; \hfill~défaut : \Cle{red}
+	\item \Cle{type} := type de regroupement parmi \Cle{Centre/Gauche/Droite} ; \hfill~défaut : \Cle{Centre}
+	\item \Cle{Decalage} := décalage du trait par rapports aux cases.\hfill~défaut : \Cle{2pt}
+\end{itemize}
+
+Les deux arguments obligatoires, et entre \texttt{\{...\}}, correspondent aux \textit{coins diagonaux} :
+
+\begin{itemize}
+	\item sans contrainte pour un rectangle \Cle{Type=Centre} ;
+	\item du type \texttt{\{BG\}\{HD\}} pour un rectangle \Cle{Type=Gauche} ;
+	\item du type \texttt{\{BD\}\{HG\}} pour un rectangle \Cle{Type=Droite}.
+\end{itemize}
+\vspace*{-\baselineskip}\leavevmode
+\end{tipblock}
+
+\subsection{Exemples}
+
+\begin{DemoCode}[]
+\begin{TableKarnaugh}
+	\KarnaughCasesResult{0,1,1,0,1,1,1,1}
+	\KarnaughBlocRegroup[Type=Centre,Couleur=orange,Decalage=-1.5pt]{10}{32}
+	\KarnaughBlocRegroup[Type=Gauche,Couleur=teal,Decalage=-1.5pt]{00}{11}
+	\KarnaughBlocRegroup[Type=Droite,Couleur=teal,Decalage=-1.5pt]{40}{31}
+\end{TableKarnaugh}
+\hspace{5mm}
+\begin{TableKarnaugh}[Aide]
+	\KarnaughCasesResult{0,1,1,0,1,1,1,1}
+	\KarnaughBlocRegroup[Type=Centre,Couleur=orange,Decalage=-1.5pt]{10}{32}
+	\KarnaughBlocRegroup[Type=Gauche,Couleur=teal,Decalage=-1.5pt]{00}{11}
+	\KarnaughBlocRegroup[Type=Droite,Couleur=teal,Decalage=-1.5pt]{40}{31}
+\end{TableKarnaugh}
+\hspace{5mm}
+\begin{TableKarnaugh}[Swap]
+	\KarnaughCasesResult{0,1,1,0,1,1,1,1}
+	\KarnaughBlocRegroup[Type=Centre,Couleur=teal,Decalage=-1.5pt]{10}{32}
+	\KarnaughBlocRegroup[Type=Gauche,Couleur=orange,Decalage=-1.5pt]{00}{11}
+	\KarnaughBlocRegroup[Type=Droite,Couleur=orange,Decalage=-1.5pt]{40}{31}
+\end{TableKarnaugh}
+\end{DemoCode}
+
+\begin{DemoCode}[]
+On obtient le tableau de Karnaugh suivant : 
+\begin{TableKarnaugh}
+		[Variables=k/l/m,Unite=1.25cm,CouleurCases=cyan!25,Couleur=darkgray, PosVarLaterale=Droite,CouleurLegende=black/blue/red]
+		<baseline=(current bounding box.center)>
+	\KarnaughCasesResult*{1,1,1,0,1,1,1,0}
+	\KarnaughBlocRegroup[Type=Centre,Couleur=brown,Decalage=-3pt]{00}{22}
+	\KarnaughBlocRegroup[Type=Centre,Couleur=teal,Decalage=-1.5pt]{10}{32}
+\end{TableKarnaugh}
+\end{DemoCode}
+
+\end{document}
