@@ -5,7 +5,7 @@
 \documentclass[french,a4paper,11pt]{article}
 \usepackage[margin=2cm,includefoot]{geometry}
 \def\TPversion{0.1.0}
-\def\TPdate{22 juin 2023}
+\def\TPdate{23 juin 2023}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage{amsmath,amssymb}
@@ -33,13 +33,8 @@
 \let\pstricks\PSTricks
 \let\TikZ\tikzlogo
 \newcommand\TableauDocumentation{%
-	\begin{tblr}{width=\linewidth,colspec={X[c]X[c]X[c]X[c]X[c]X[c]},cells={font=\sffamily}}
-		{\LARGE \LaTeX} & & & & &\\
-		& {\LARGE \hologo{pdfLaTeX}} & & & & \\
-		& & {\LARGE \hologo{LuaLaTeX}} & & & \\
-		& & & {\LARGE \TikZ} & & \\
-		& & & & {\LARGE \TeXLive} & \\
-		& & & & & {\LARGE \hologo{MiKTeX}} \\
+	\begin{tblr}{width=\linewidth,colspec={X[c]X[c]X[c]X[c]X[c]X[c]},cells={font=\large\sffamily}}
+		{\LaTeX} & {\hologo{pdfLaTeX}} & {\hologo{LuaLaTeX}} & {\TikZ} & {\TeXLive} & {\hologo{MiKTeX}} \\
 	\end{tblr}
 }
 
@@ -84,10 +79,10 @@
 		keywordstyle={\color{violet}},%
 		classoffset=2,%
 		alsoletter={-},%
-		morekeywords={\MPMPlaceTache,\MPMPlaceNotice,\MPMPlaceDuree,GrapheMPM,TableKarnaugh,\KarnaughCasesResult,\KarnaughBlocRegroup,\MPMPlaceTaches,\MPMPlaceDurees},%
+		morekeywords={\MPMPlaceTache,\MPMPlaceNotice,\MPMPlaceDuree,GrapheMPM,TableKarnaugh,\KarnaughCasesResult,\KarnaughBlocRegroup,\MPMPlaceTaches,\MPMPlaceDurees,GrapheTikz,\GrphPlaceSommets,\GrphTraceAretes,\tikzset},%
 		keywordstyle={\color{green!50!black}},%
 		classoffset=3,%
-		morekeywords={CouleurDurees,CouleurFleches,LargeurCases,Epaisseur,Police,CouleurDates,CouleurBords,NoirBlanc,Grille,DecalHorizDeb,DecalVertDeb,DecalHorizFin,DecalVertFin,Coude,SensCoude,Unite,Variables,Swap,Aide,CouleurCases,Decalage,Couleur,Type,Legende,PosVarLaterale,CouleurLegende},%
+		morekeywords={CouleurDurees,CouleurFleches,LargeurCases,Epaisseur,Police,CouleurDates,CouleurBords,NoirBlanc,Grille,DecalHorizDeb,DecalVertDeb,DecalHorizFin,DecalVertFin,Coude,SensCoude,Unite,Variables,Swap,Aide,CouleurCases,Decalage,Couleur,Type,Legende,PosVarLaterale,CouleurLegende,CouleurSommets,TypeSommets,Unite,CouleurFT,DimensionSommets,PositionFleches,EchelleFleches,TypeFleche,Droit,Milieu,AngleGauche,AngleDroite,Boucle,GrphStyleArc,GrphStyleSommet,Poids,GrphStylepoids},%
 		keywordstyle={\color{orange}}
 	},%
 	#1
@@ -130,9 +125,7 @@
 			\begin{tabular}{c}
 				{\Huge \texttt{ProfSio} [fr]}\\
 				\\
-				{\LARGE Des outils pour} \\
-				\\
-				{\LARGE les Maths en BTS SIO.} \\
+				{\LARGE Des outils pour les Maths en BTS SIO.} \\
 			\end{tabular}
 			
 			\bigskip
@@ -158,6 +151,10 @@
 \vspace{0.25cm}
 
 {$\blacktriangleright$~~Créer des tables de Karnaugh avec mise en valeur (manuelle) des regroupements.}
+
+\vspace{0.25cm}
+
+{$\blacktriangleright$~~Créer des graphes simples.}
 
 \vspace{1cm}
 
@@ -208,9 +205,17 @@
 
 \vspace{0.5cm}
 
-%\hfill{}\textit{Merci à Patrick Bideault pour ses retours et conseils !}
+\hfill
+\begin{GrapheTikz}[Unite=0.75cm,CouleurSommets={gray/blue},Epaisseur={very thick/thick},CouleurFleches=orange]
+	\GrphPlaceSommets{(5,4)/A (2,2)/B (9,3)/C}
+	\GrphTraceAretes{A/B}
+	\GrphTraceAretes[AngleGauche]{C/A}
+	\GrphTraceAretes[AngleDroite]{B/C}
+	\GrphTraceAretes[Boucle=4]{A/45 B/135 C/-45}
+\end{GrapheTikz}
+\hfill~
 
-%\smallskip
+%%\hfill{}\textit{Merci à Patrick Bideault pour ses retours et conseils !}
 
 \vfill
 
@@ -223,8 +228,6 @@
 \medskip
 
 \hrule
-
-\medskip
 
 \newpage
 
@@ -250,13 +253,14 @@ Le package \packagetex!ProfSio! propose quelques commandes pour travailler sur d
 
 \begin{itemize}
 	\item graphe d'ordonnancement par la méthode MPM ;
-	\item tableau de Karnaugh à 3 variables.
+	\item tableau de Karnaugh à 3 variables ;
+	\item graphes \textit{simples} orientés, pondérés.
 \end{itemize}
 \vspace*{-\baselineskip}\leavevmode
 \end{noteblock}
 
 \begin{warningblock}
-Le code ne propose par de \og résolution \fg{} du graphe MPM ou de \og simplification \fg{} d'expressions booléennes, il ne consiste \textit{qu'en} une mise en forme du graphe MPM ou du tableau de Karnaugh.
+Le code ne propose par de \og résolution \fg{} du graphe MPM, de \og simplification \fg{} d'expressions booléennes ou de représentation \og automatique \fg{} d'un graphe, il ne consiste \textit{qu'en} une mise en forme du graphe MPM, du tableau de Karnaugh ou du graphe.
 \end{warningblock}
 
 \subsection{Chargement du package, packages utilisés}
@@ -282,11 +286,11 @@ Il n'existe pas d'option pour le package, et \packagetex!xcolor! n'est pas charg
 	\item les librairies \packagetex!tikz! :
 	\begin{itemize}
 		\item \motcletex!tikz.positioning!
-		\item \motcletex!tikz.decorations.pathreplacing! ;
-		\item \motcletex!tikz.decorations.markings! ;
+		\item \motcletex!tikz.decorations.pathreplacing! et \motcletex!tikz.decorations.markings! ;
 		\item \motcletex!tikz.babel! ;
 		\item \motcletex!tikz.calc! ;
-		\item \motcletex!tikz.arrows!.
+		\item \motcletex!tikz.shapes! et \motcletex!tikz.shapes.geometric! ;
+		\item \motcletex!tikz.arrows! et \motcletex!tikz.arrows.meta!.
 	\end{itemize}
 \end{itemize}
 
@@ -298,11 +302,7 @@ Il est compatible avec les compilations usuelles en \textsf{latex}, \textsf{pdfl
 \begin{tipblock}
 Les environnements sont créés avec \TikZ, et la majorité des paramètres des tracés sont personnalisables :
 
-\begin{itemize}
-	\item couleurs ;
-	\item dimensions.
-\end{itemize}
-\vspace*{-\baselineskip}\leavevmode
+\hfill{}couleurs ; dimensions ; polices.\hfill~
 \end{tipblock}
 
 \begin{noteblock}
@@ -311,7 +311,7 @@ Le choix a été fait de :
 \begin{itemize}
 	\item présenter l'ordonnancement par la méthode MPM, avec présentation des tâches \textit{fixée} ;
 	\item limiter les tableaux de Karnaugh pour 3 variables, avec présentation \textit{fixée} ;
-	\item de ne pas proposer de modification de la présentation \textit{globale}
+	\item de ne pas forcément proposer de modification de la présentation \textit{globale}
 \end{itemize}
 \vspace*{-\baselineskip}\leavevmode
 \end{noteblock}
@@ -754,6 +754,244 @@ On obtient le tableau de Karnaugh suivant :
 	\KarnaughBlocRegroup[Type=Centre,Couleur=brown,Decalage=-3pt]{00}{22}
 	\KarnaughBlocRegroup[Type=Centre,Couleur=teal,Decalage=-1.5pt]{10}{32}
 \end{TableKarnaugh}
+\end{DemoCode}
+
+\pagebreak
+
+\section{Graphes \textit{simples}}
+
+\subsection{Commande et fonctionnement global}
+
+\begin{cautionblock}
+L'environnement dédié à la création d'un graphe \textit{simple} est \motcletex!GrapheTikz!.
+
+C'est en fait un environnement \motcletex!tikzpicture! personnalisé.
+
+\smallskip
+
+Les commandes à utiliser dans l'environnement sont :
+
+\begin{itemize}
+	\item \motcletex!\GrphPlaceSommets! ;
+	\item \motcletex!\GrphTraceAretes! ;.
+\end{itemize}
+\vspace*{-\baselineskip}\leavevmode
+\end{cautionblock}
+
+\begin{DemoCode}[listing only]
+\begin{GrapheTikz}[clés]<options tikz>
+	\GrphPlaceSommets{liste coordonnées/sommet}
+	\GrphTraceAretes(*)[type]<options tikz>{liste arêtes}
+\end{GrapheTikz}
+\end{DemoCode}
+
+\begin{DemoCode}[]
+\begin{GrapheTikz}
+	\GrphPlaceSommets{(2,2.5)/A (0,0)/B (5,1)/C}
+	\GrphTraceAretes{A/B}
+	\GrphTraceAretes[AngleGauche]{C/A}
+	\GrphTraceAretes[AngleDroite]{B/C}
+	\GrphTraceAretes[Boucle]{A/45 B/135 C/-45}
+\end{GrapheTikz}
+\end{DemoCode}
+
+\begin{warningblock}
+La majorité des paramètres sont personnalisables, mais le \textit{thème} général est globalement \textit{fixé}, dans le sens où ce sont les éléments \textit{cosmétiques} qui pourront être modifiés.
+
+\smallskip
+
+Au contraire du package \packagetex!tkz-graph! qui permet beaucoup plus de choses, les commandes de \packagetex!ProfSio! se veulent beaucoup plus basiques, dans l'optique de travailler avec des graphes en adéquation avec le programme de BTS SIO.
+\end{warningblock}
+
+\begin{noteblock}
+L'utilisateur pourra également redéfinir les styles utilisées par les commandes de \packagetex!ProfSio! pour refondre le paramétrage global de l'environnement.
+\end{noteblock}
+
+\begin{DemoCode}[listing only]
+\begin{GrapheTikz}[clés]<options tikz>
+	\tikzset{GrphStyleSommet/.style = {...}}
+	\tikzset{GrphStyleArc/.style = {...}}
+	\tikzset{GrphStylepoids/.style = {...}}
+\end{GrapheTikz}
+\end{DemoCode}
+
+\begin{tipblock}
+La commande de tracé des arêtes nécessite de travailler avec des nœuds existants, donc tout nœud précédemment défini, que ce soit avec la commande de \packagetex!ProfSio! ou tout autre commande pourra être utilisé !
+\end{tipblock}
+
+\subsection{Arguments et clés pour l'environnement}
+
+\begin{DemoCode}[listing only]
+\begin{GrapheTikz}[clés]<options tikz>
+	%commandes
+\end{GrapheTikz}
+\end{DemoCode}
+
+\begin{tipblock}
+En ce qui concerne la création de l'environnement, les \Cle{clés} sont :
+
+\begin{itemize}
+	\item \Cle{Police} := police des sommets ; \hfill{}défaut : \Cle{\textbackslash bfseries\textbackslash Large\textbackslash sffamily},%
+	\item \Cle{Poids} := police des éventuels poids ; \hfill{}défaut : \Cle{\textbackslash sffamily},%
+	\item \Cle{CouleurSommets} := couleur(s) sous la forme \Cle{Couleur} ou \Cle{CouleurBord/CouleurTexte} des sommets ;
+	
+	\hfill{}défaut : \Cle{black}
+	\item \Cle{CouleurFleches} := couleur des arêtes (et des poids) ; \hfill{}défaut : \Cle{black},%
+	\item \Cle{TypeSommets} := type de forme des sommets ; \hfill{}défaut : \Cle{circle}
+	\item \Cle{Epaisseur} := épaisseur(s) sous la forme \Cle{Epaisseur} ou \Cle{EpaisseurSommet/EpaisseurArête} des traits ;
+	
+	\hfill{}défaut : \Cle{thick}
+	\item \Cle{Unite} := unité globale de la figure ; \hfill{}défaut : \Cle{1cm}
+	\item \Cle{CouleurFT} := couleur des arêtes de la fermeture transitive (accessible ensuite via \Cle{FT}) ; \hfill{}défaut : \Cle{black}
+	\item \Cle{Grille} := pour afficher une grille d'aide (\Cle{\{xmax,ymax\}}), entre (0;\,0) et (xmax;\,ymax) ;
+	
+	\hfill~défaut : \Cle{vide}
+	\item \Cle{DimensionSommets} := dimension(s) minimale(s) des formes des sommets, sous la forme \Cle{Globale} ou \Cle{Largeur/Hauteur} ;
+	
+	\hfill{}défaut : \Cle{1cm}
+	\item \Cle{PositionFleches} := position, parmi \Cle{Milieu/Fin} pour les flèches ; \hfill{}défaut : \Cle{Fin}
+	\item \Cle{EchelleFleches} := échelle de la flèche ; \hfill{}défaut : \Cle{1}
+	\item \Cle{TypeFleche} := type (en \TikZ) des flèches.\hfill{}défaut : \Cle{Latex}
+\end{itemize}
+
+Le deuxième argument, optionnel et entre \texttt{<...>} propose des options, en langage \packagetex!tikz! à passer à l'environnement.
+\end{tipblock}
+
+\pagebreak
+
+\subsection{Arguments et clés pour la commande de création des sommets}
+
+\begin{DemoCode}[listing only]
+\begin{GrapheTikz}[clés]<options tikz>
+	\GrphPlaceSommets{liste coordonnées/sommet}
+\end{GrapheTikz}
+\end{DemoCode}
+
+\begin{tipblock}
+En ce qui concerne la création des sommets, la liste est à donner sous la forme \verb!(xa,ya)/A (xb,yb)/B (xc,yc)/C ...!
+
+\smallskip
+
+Dans le cas de sommets avec des espaces, il faut les \textit{protéger} par des \texttt{\{...\}}.
+\end{tipblock}
+
+\begin{DemoCode}[]
+\begin{GrapheTikz}[CouleurSommets={brown/purple},TypeSommets=ellipse,Police={}]
+	\GrphPlaceSommets{(2,2.5)/Hôpital (0,0)/Mairie (5,1)/Banque}
+\end{GrapheTikz}
+\end{DemoCode}
+
+\begin{DemoCode}[]
+\begin{GrapheTikz}[Epaisseur={very thick},Grille={5,4},DimensionSommets=1.5cm]
+	\GrphPlaceSommets{(0,0)/K (4,0)/L (60:4)/M}
+\end{GrapheTikz}
+\end{DemoCode}
+
+\begin{DemoCode}[]
+\begin{GrapheTikz}[TypeSommets=diamond,DimensionSommets=2cm/1.5cm]
+	\GrphPlaceSommets{(0,0)/K (4,0)/L (60:4)/M}
+\end{GrapheTikz}
+\end{DemoCode}
+
+\pagebreak
+
+\subsection{Arguments et clés pour la commande de tracé des arêtes}
+
+\begin{DemoCode}[listing only]
+\begin{GrapheTikz}[clés]<options tikz>
+	%commandes de placement des sommets
+	\GrphTraceAretes(*)[type]<options tikz>{liste arêtes}
+\end{GrapheTikz}
+\end{DemoCode}
+
+\begin{tipblock}
+En ce qui concerne le tracés des arêtes, la commande permet de tracer des arêtes ayant le même style.
+
+\smallskip
+
+La version \textit{étoilée} permet de pondérer l'arête (le poids est, par défaut, situé sur le milieu de l'arête).
+
+\smallskip
+
+Les \Cle{type} d'arête, disponible entre \texttt{[...]} et valant \Cle{Droit} par défaut, de la commande peut valoir :
+
+\begin{itemize}
+	\item \Cle{Droit} := permet de tracer des arêtes orientées \textit{droites} ;
+	\item \Cle{AngleGauche} ou \Cle{AngleGauche=...} := permet de tracer des arêtes orientées \textit{courbées vers la gauche}, avec par défaut un angle de 10° ;
+	\item \Cle{AngleDroite} ou \Cle{AngleDroite=...} := permet de tracer des arêtes orientées \textit{courbées vers la droite}, avec par défaut un angle de 10° ;
+	\item \Cle{Boucle} ou \Cle{Boucle=...} := permet de tracer une boucle avec un coefficient \motcletex!looseness! de 6 par défaut.
+\end{itemize}
+
+Dans le cas d'arêtes \textit{classiques}, la liste est à donner sous la forme \verb|Deb/Fin Deb/Fin Deb/Fin ...| ou \verb|Deb/Fin/Poids Deb/Fin/Poids Deb/Fin/Poids ...|
+
+\smallskip
+
+Dans le cas de boucles, la lise est à donner sous la forme \verb|Som/anglesortie Som/anglesortie ...| ou \verb|Som/anglesortie/Poids Som/anglesortie/Poids ...| en sachant que (par défaut) l'angle d'entrée est fixé 90° après dans le sens trigonométrique.
+
+\smallskip
+
+Pour marquer une fermeture transitive, on peut utiliser le style \verb|FT| dans les \textit{options tikz} de la commande.
+\end{tipblock}
+
+\begin{DemoCode}[]
+\begin{GrapheTikz}
+	\GrphPlaceSommets{(0,0)/A (3,1)/B}
+	\GrphTraceAretes{A/B}
+\end{GrapheTikz}
+\hspace{5mm}
+\begin{GrapheTikz}
+	\GrphPlaceSommets{(0,0)/A (3,1)/B}
+	\GrphTraceAretes[AngleGauche]{A/B}
+\end{GrapheTikz}
+\hspace{5mm}
+\begin{GrapheTikz}
+	\GrphPlaceSommets{(0,0)/A (3,1)/B}
+	\GrphTraceAretes*[AngleGauche]{A/B/10}
+\end{GrapheTikz}
+\end{DemoCode}
+
+\begin{DemoCode}[]
+\begin{GrapheTikz}
+	\GrphPlaceSommets{(0,0)/A (3,1)/B}
+	\GrphTraceAretes[AngleDroite=45]{A/B}
+\end{GrapheTikz}
+\hspace{5mm}
+\begin{GrapheTikz}
+	\GrphPlaceSommets{(0,0)/A (3,1)/B}
+	\GrphTraceAretes[AngleGauche]{A/B B/A}
+\end{GrapheTikz}
+\end{DemoCode}
+
+\begin{DemoCode}[]
+\begin{GrapheTikz}
+	\GrphPlaceSommets{(0,0)/A (4,1)/B (2,3)/C}
+	\GrphTraceAretes[Boucle]{A/135 B/15}
+	\GrphTraceAretes*[Boucle=10]{C/60/{0{,}3}}
+\end{GrapheTikz}
+\end{DemoCode}
+
+\subsection{Exemples}
+
+\begin{DemoCode}[]
+\begin{GrapheTikz}
+	[DimensionSommets=14pt,Police=\bfseries\sffamily,CouleurSommets={blue/orange}]
+	%SOMMETS
+	\GrphPlaceSommets{(1,4)/A (3,4)/B (4,3)/C (3,2)/D (2,1)/E (0,1)/F}
+	%ARÊTES
+	\GrphTraceAretes{A/B B/D B/E C/A C/D D/A D/E E/F F/B}
+\end{GrapheTikz}
+\end{DemoCode}
+
+\begin{DemoCode}[]
+\begin{GrapheTikz}
+	%SOMMETS
+	\GrphPlaceSommets{(1,6)/A (7,6)/B (7,3)/C (4,1)/D (1,3)/E}
+	%ARÊTES
+	\GrphTraceAretes[AngleGauche]{A/B A/D A/E B/E C/E E/C D/C C/D E/D D/E}
+	%FT
+	\GrphTraceAretes[AngleGauche]<FT>{A/C B/C B/D}
+	\GrphTraceAretes[Boucle]<FT>{C/-45 E/135 D/-135}
+\end{GrapheTikz}
 \end{DemoCode}
 
 \end{document}

@@ -2,7 +2,7 @@
 % licence    : Released under the LaTeX Project Public License v1.3c or later, see http://www.latex-project.org/lppl.txtf
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{ProfSio}[2023/06/22 0.1.0 Pour les enseignants en BTS SIO]
+\ProvidesPackage{ProfSio}[2023/06/23 0.1.0 Pour les enseignants en BTS SIO]
 %0.1.0	Version initiale
 
 %------Packages utiles
@@ -13,7 +13,7 @@
 \RequirePackage{listofitems}
 \RequirePackage{xintexpr}
 %------Librairies
-\usetikzlibrary{positioning,decorations.pathreplacing,decorations.markings,arrows,calc,babel}
+\usetikzlibrary{positioning,decorations.pathreplacing,decorations.markings,arrows,arrows.meta,calc,babel,shapes,shapes.geometric}
 
 %------Graphe MPM
 \defKV[MPM]{%
@@ -380,5 +380,164 @@
 		}%
 		{}%
 }
+
+%------Graphes
+\defKV[GraphSIO]{%
+	Police=\def\GrphPoliceSommets{#1},%
+	Poids=\def\GrphPolicePoids{#1},%
+	CouleurSommets=\def\GrphCoulSommets{#1},%
+	CouleurFleches=\def\GrphCoulFleches{#1},%
+	Epaisseur=\def\GrphTchick{#1},%
+	TypeSommets=\def\GrphTypeSomm{#1},%
+	Unite=\def\GrphUnit{#1},%
+	CouleurFT=\def\GrphCoulFT{#1},%
+	Grille=\def\GrphGrille{#1},%
+	DimensionSommets=\def\GrphDimSommet{#1},%
+	PositionFleches=\def\GrphPosArrow{#1},%
+	EchelleFleches=\def\GrphScaleArrow{#1},%
+	TypeFleche=\def\GrphTypeArrow{#1}
+}
+
+\setKVdefault[GraphSIO]{%
+	Police={\bfseries\Large\sffamily},%
+	Poids={\sffamily},%
+	CouleurSommets={black},%
+	CouleurFleches={black},%
+	TypeSommets=circle,%
+	Epaisseur=thick,%
+	Unite=1cm,%
+	CouleurFT=red,%
+	Grille={},%
+	DimensionSommets=1cm,%
+	PositionFleches={Fin},%
+	EchelleFleches=1,%
+	TypeFleche=Latex
+}
+
+\NewDocumentEnvironment{GrapheTikz}{ O{} D<>{} }%
+{%
+	\restoreKV[GraphSIO]% revenir au valeurs par défaut
+	\setKV[GraphSIO]{#1}% lit les arguments optionnels
+	\IfSubStr{\GrphDimSommet}{/}%
+		{%
+			\StrCut{\GrphDimSommet}{/}{\GrphDimSommetLarg}{\GrphDimSommetHaut}%
+		}%
+		{%
+			\def\GrphDimSommetLarg{\GrphDimSommet}\def\GrphDimSommetHaut{\GrphDimSommet}%
+		}%
+	\IfSubStr{\GrphTchick}{/}%
+		{%
+			\StrCut{\GrphTchick}{/}{\GrphTchickA}{\GrphTchickB}%
+		}%
+		{%
+			\def\GrphTchickA{\GrphTchick}\def\GrphTchickB{\GrphTchick}%
+		}%
+	\IfSubStr{\GrphCoulSommets}{/}%
+		{%
+			\StrCut{\GrphCoulSommets}{/}{\GrphCoulA}{\GrphCoulB}%
+		}%
+		{%
+			\def\GrphCoulA{\GrphCoulSommets}\def\GrphCoulB{\GrphCoulSommets}%
+		}%
+	\begin{tikzpicture}[x=\GrphUnit,y=\GrphUnit,#2]
+		\tikzset{GrphStyleSommet/.style = {\GrphTchickA,draw=\GrphCoulA,\GrphTypeSomm,minimum height=\GrphDimSommetHaut,minimum width=\GrphDimSommetLarg,text=\GrphCoulB}}%
+		\tikzset{GrphStylepoids/.style = {inner sep=2pt,midway,draw=none,font=\GrphPolicePoids,text=\GrphCoulFleches,fill=white}}%
+		\IfStrEq{\GrphPosArrow}{Fin}%
+			{%
+				\tikzset{GrphStyleArc/.style = {\GrphCoulFleches,\GrphTchickB,-{\GrphTypeArrow[scale=\GrphScaleArrow]}}}%
+			}%
+			{}%
+		\IfStrEq{\GrphPosArrow}{Milieu}%
+			{%
+				\tikzset{GrphStyleArc/.style = {\GrphCoulFleches,\GrphTchickB,postaction={decorate},decoration={markings,mark=at position 0.55 with {\arrow[scale=\GrphScaleArrow,>=\GrphTypeArrow]{>}}}}}%
+			}{}%
+		\tikzset{FT/.style = {\GrphCoulFT}}%
+		\IfStrEq{\GrphGrille}{}%
+			{}%
+			{%
+				\StrCut{\GrphGrille}{,}{\GrphGrilleX}{\GrphGrilleY}%
+				\draw[thin,dotted,lightgray,xstep=0.5,ystep=0.5] (0,0) grid (\GrphGrille) ;%
+				\draw[thin,lightgray,xstep=1,ystep=1] (0,0) grid (\GrphGrille) ;%
+				\foreach \x in {0,0.5,...,\GrphGrilleX} {\draw[thin,lightgray] (\x,0)--++(0,-2pt) node[below,inner sep=1pt,font=\sffamily\tiny] {\x} ;}%
+				\foreach \y in {0,0.5,...,\GrphGrilleY} {\draw[thin,lightgray] (0,\y)--++(-2pt,0) node[left,inner sep=1pt,font=\sffamily\tiny] {\y} ;}%
+				\filldraw[lightgray] (0,0) circle[radius=1.5pt] ;%
+			}%
+}%
+{%
+	\end{tikzpicture}
+}
+
+\NewDocumentCommand\GrphPlaceSommets{ m }{%
+	\setsepchar[.]{ ./}%
+	\readlist*\GrphtmpLS{#1}%
+	\xintFor* ##1 in {\xintSeq{1}{\GrphtmpLSlen}}\do{%
+		\node[GrphStyleSommet,font=\GrphPoliceSommets] (\GrphtmpLS[##1,2]) at \GrphtmpLS[##1,1] {\GrphtmpLS[##1,2]} ;
+	}%
+}
+
+\NewDocumentCommand\GrphTraceAretes{ s O{Droit} D<>{} m }{%
+	\setsepchar[.]{ ./}%
+	\readlist*\GrphtmpLA{#4}%
+	\xintFor* ##1 in {\xintSeq{1}{\GrphtmpLAlen}}\do{%
+		\IfStrEq{#2}{Droit}%
+			{%
+				\IfBooleanTF{#1}%
+					{%
+						\draw[GrphStyleArc,#3] (\GrphtmpLA[##1,1])--(\GrphtmpLA[##1,2]) node[GrphStylepoids] {\GrphtmpLA[##1,3]} ;%
+					}%
+					{%
+						\draw[GrphStyleArc,#3] (\GrphtmpLA[##1,1])--(\GrphtmpLA[##1,2]) ;
+					}%
+			}{}%
+		\IfSubStr{#2}{AngleGauche}%
+			{%
+				\def\GrphAngle{10}%
+				\IfSubStr{#2}{=}%
+					{%
+						\StrBehind{#2}{=}[\GrphAngle]%
+					}{}%
+				\IfBooleanTF{#1}%
+					{%
+						\draw[GrphStyleArc,#3] (\GrphtmpLA[##1,1]) to[bend left=\GrphAngle] node[GrphStylepoids] {\GrphtmpLA[##1,3]} (\GrphtmpLA[##1,2]) ;%
+					}%
+					{%
+						\draw[GrphStyleArc,#3] (\GrphtmpLA[##1,1]) to[bend left=\GrphAngle] (\GrphtmpLA[##1,2]) ;
+					}%
+			}{}%
+		\IfSubStr{#2}{AngleDroit}%
+			{%
+				\def\GrphAngle{10}%
+				\IfSubStr{#2}{=}%
+					{%
+						\StrBehind{#2}{=}[\GrphAngle]%
+					}{}%
+				\IfBooleanTF{#1}%
+					{%
+						\draw[GrphStyleArc,#3] (\GrphtmpLA[##1,1]) to[bend right=\GrphAngle] node[GrphStylepoids] {\GrphtmpLA[##1,3]} (\GrphtmpLA[##1,2]) ;%
+					}%
+					{%
+						\draw[GrphStyleArc,#3] (\GrphtmpLA[##1,1]) to[bend right=\GrphAngle] (\GrphtmpLA[##1,2]) ;
+					}%
+			}{}%
+		\IfSubStr{#2}{Boucle}%
+			{%
+				\def\GrphBoucleCoeff{6}%
+				\IfSubStr{#2}{=}%
+					{%
+						\StrBehind{#2}{=}[\GrphBoucleCoeff]%
+					}{}%
+				\def\GrphAngleOut{\GrphtmpLA[##1,2]}%
+				\def\GrphAngleIn{\inteval{\GrphAngleOut+90}}%
+				\IfBooleanTF{#1}%
+					{%
+						\draw[GrphStyleArc,#3] (\GrphtmpLA[##1,1]) to[loop,looseness=\GrphBoucleCoeff,out=\GrphAngleOut,in=\GrphAngleIn] node[GrphStylepoids] {\GrphtmpLA[##1,3]} (\GrphtmpLA[##1,1]) ;%
+					}%
+					{%
+						\draw[GrphStyleArc,#3] (\GrphtmpLA[##1,1]) to[loop,looseness=\GrphBoucleCoeff,out=\GrphAngleOut,in=\GrphAngleIn] (\GrphtmpLA[##1,1]) ;
+					}%
+			}{}%
+	}%
+}
+
 
 \endinput
