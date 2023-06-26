@@ -2,7 +2,8 @@
 % licence    : Released under the LaTeX Project Public License v1.3c or later, see http://www.latex-project.org/lppl.txtf
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{ProfSio}[2023/06/23 0.1.0 Pour les enseignants en BTS SIO]
+\ProvidesPackage{ProfSio}[2023/06/26 0.1.1 Pour les enseignants en BTS SIO]
+%0.1.1	Correction de la documentation + Ajout des diagrammes sagittaux
 %0.1.0	Version initiale
 
 %------Packages utiles
@@ -539,5 +540,102 @@
 	}%
 }
 
+%------Diagramme Sagittal
+\defKV[DiagSagitt]{%
+	E=\def\DSListeEltE{#1},%
+	F=\def\DSListeEltF{#1},%
+	DistElem=\def\DSEcartIN{#1},%
+	DistEns=\def\DSEcartIP{#1},%
+	LargEns=\def\DSLargPatates{#1},%
+	NomAppli=\def\DSNomFctPatates{#1},%
+	CouleurE=\def\DSCouleurE{#1},%
+	CouleurAppli=\def\DSCouleurFct{#1},%
+	CouleurF=\def\DSCouleurF{#1},%
+	CouleurFleches=\def\DSCouleurArc{#1},%
+	TypeFleche=\def\DSTypeFleche{#1},%
+	Epaisseur=\def\DSThick{#1},%
+	Police=\def\DSPolicePatates{#1},%
+	PoliceLabels=\def\DSPoliceLabels{#1},%
+	Ensembles=\def\DSNomEns{#1},%
+	PosLabels=\def\DSPosLabels{#1}
+}
+
+\setKVdefault[DiagSagitt]{%
+	DistElem=0.75,%
+	DistEns=4,%
+	LargEns=1.5,%
+	NomAppli={$f$},%
+	CouleurE={blue},%
+	CouleurAppli={violet},%
+	CouleurF={red},%
+	CouleurFleches={teal},%
+	TypeFleche=Latex,%
+	Epaisseur=0.8pt,%
+	Police={},%
+	NoirBlanc=false,%
+	Labels=true,%
+	Ensembles={$\mathcal{E}$/$\mathcal{F}$},%{E/F},%
+	PosLabels=bas,%
+	PoliceLabels={}
+}
+
+\NewDocumentCommand\DiagrammeSagittal{s O{} D<>{} m }{%
+	\restoreKV[DiagSagitt]%paramètres par défaut
+	\setKV[DiagSagitt]{#2}%
+	\readlist*\DSLstE{\DSListeEltE}%
+	\readlist*\DSLstF{\DSListeEltF}%
+	\def\DSHauteurPatateE{\fpeval{\DSEcartIN*(1+\DSLstElen)}}%
+	\def\DSHauteurPatateF{\fpeval{\DSEcartIN*(1+\DSLstFlen)}}%
+	\def\DSMaxHauteursPatates{\fpeval{max(\DSHauteurPatateE,\DSHauteurPatateF)}}%
+	\def\DSOffsetPatates{\fpeval{0.5*\DSHauteurPatateF-0.5*\DSHauteurPatateE}}%
+	\IfStrEq{\DSPosLabels}{bas}%
+		{%
+			\def\DSHautLegende{\fpeval{min(0,-\DSOffsetPatates)-0.5*\DSEcartIN}}%
+		}{}%
+	\IfStrEq{\DSPosLabels}{haut}%
+		{%
+			\def\DSHautLegende{\fpeval{max(\DSHauteurPatateE,\DSHauteurPatateF-\DSOffsetPatates)+0.5*\DSEcartIN}}%
+		}{}
+	\ifboolKV[DiagSagitt]{NoirBlanc}%
+		{%
+			\def\DSCouleurE{black}%
+			\def\DSCouleurF{black}%
+			\def\DSCouleurArc{black}%
+			\def\DSCouleurFct{black}%
+		}{}%
+	\IfBooleanTF{#1}%
+		{}%
+		{\begin{tikzpicture}[#3]}%
+		%LABELS
+		%\draw[lightgray,thin,->] (-1,0)--++(6,0) ;
+		\ifboolKV[DiagSagitt]{Labels}%
+			{%
+				\saveexpandmode\expandarg
+				\StrCut{\DSNomEns}{/}{\DSNomE}{\DSNomF}
+				\restoreexpandmode
+				\draw (0,{\DSHautLegende}) node[\DSCouleurE,inner sep=1pt,font=\DSPoliceLabels] {\DSNomE} ;
+				\draw ({\DSEcartIP},{\DSHautLegende}) node[\DSCouleurF,inner sep=1pt,font=\DSPoliceLabels] {\DSNomF} ;
+				\draw[line width=\DSThick,->,>=\DSTypeFleche] ({0.45},{\DSHautLegende})--({\DSEcartIP-0.45},{\DSHautLegende}) node[midway,above=2pt,inner sep=1pt,text=\DSCouleurFct,font=\DSPoliceLabels] {\DSNomFctPatates} ;
+			}{}%
+		%PATATE_E (ok)
+		\draw[line width=\DSThick] (0,{0.5*\DSHauteurPatateE}) ellipse ({0.5*\DSLargPatates} and {0.5*\DSHauteurPatateE} );
+		\foreach \i in {1,...,\DSLstElen}{%
+			\coordinate (E\DSLstE[\i]) at ({0.05*\DSLargPatates},{(\DSLstElen-\i+1)*\DSEcartIN}) ;%
+			\filldraw[\DSCouleurE] (E\DSLstE[\i]) circle[radius=1.5pt] node[left,font=\DSPolicePatates] {\DSLstE[\i]} ;%
+		}%
+		%PATATE_F (ok)
+		\draw[line width=\DSThick] ({\DSEcartIP},{0.5*\DSHauteurPatateF-\DSOffsetPatates}) ellipse ({0.5*\DSLargPatates} and {0.5*\DSHauteurPatateF} );
+		\foreach \i in {1,...,\DSLstFlen}{%
+			\coordinate (F\DSLstF[\i]) at ({\DSEcartIP-0.05*\DSLargPatates},{(\DSLstFlen-\i+1)*\DSEcartIN-\DSOffsetPatates}) ;%
+			\filldraw[\DSCouleurF] (F\DSLstF[\i]) circle[radius=1.5pt] node[right,font=\DSPolicePatates] {\DSLstF[\i]} ;%
+		}%
+		%ARCS
+		\foreach \Deb/\Fin in {#4} {%
+			\draw[line width=\DSThick,->,>=\DSTypeFleche,\DSCouleurArc] (E\Deb)--(F\Fin) ;
+		}%
+	\IfBooleanTF{#1}%
+		{}%
+		{\end{tikzpicture}}%
+}
 
 \endinput
