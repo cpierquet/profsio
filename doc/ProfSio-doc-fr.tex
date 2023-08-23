@@ -5,8 +5,8 @@
 
 \documentclass[french,a4paper,11pt]{article}
 \usepackage[margin=2cm,includefoot]{geometry}
-\def\TPversion{0.1.2}
-\def\TPdate{3 juillet 2023}
+\def\TPversion{0.1.4}
+\def\TPdate{23 août 2023}
 %\usepackage[utf8]{inputenc}
 %\usepackage[T1]{fontenc}
 \usepackage{amsmath,amssymb}
@@ -84,7 +84,7 @@
 		morekeywords={\MPMPlaceTache,\MPMPlaceNotice,\MPMPlaceDuree,GrapheMPM,TableKarnaugh,\KarnaughCasesResult,\KarnaughBlocRegroup,\MPMPlaceTaches,\MPMPlaceDurees,GrapheTikz,\GrphPlaceSommets,\GrphTraceAretes,\tikzset,\DiagrammeSagittal,\draw,\DiagrammeSagittalCompo,\TableVerite},%
 		keywordstyle={\color{green!50!black}},%
 		classoffset=3,%
-		morekeywords={CouleurDurees,CouleurFleches,LargeurCases,Epaisseur,Police,CouleurDates,CouleurBords,NoirBlanc,Grille,DecalHorizDeb,DecalVertDeb,DecalHorizFin,DecalVertFin,Coude,SensCoude,Unite,Variables,Swap,Aide,CouleurCases,Decalage,Couleur,Type,Legende,PosVarLaterale,CouleurLegende,CouleurSommets,TypeSommets,Unite,CouleurFT,DimensionSommets,PositionFleches,EchelleFleches,TypeFleche,Droit,Milieu,AngleGauche,AngleDroite,Boucle,GrphStyleArc,GrphStyleSommet,Poids,GrphStylepoids,DistElem,DistEns,LargEns,NomAppli,CouleurE,CouleurAppli,CouleurF,CouleursFleches,TypeFleche,Epaisseur,Labels,Ensembles,PosLabels,PoliceLabels,Offset,NomApplis,CouleursAppli,VF,LargeursColonnes,CouleurEnonce,CodeAvant,CodeApres},%
+		morekeywords={CouleurDurees,CouleurFleches,LargeurCases,Epaisseur,Police,CouleurDates,CouleurBords,NoirBlanc,Grille,DecalHorizDeb,DecalVertDeb,DecalHorizFin,DecalVertFin,Coude,SensCoude,Unite,Variables,Swap,Aide,CouleurCases,Decalage,Couleur,Type,Legende,PosVarLaterale,CouleurLegende,CouleurSommets,TypeSommets,Unite,CouleurFT,DimensionSommets,PositionFleches,EchelleFleches,TypeFleche,Droit,Milieu,AngleGauche,AngleDroite,Boucle,GrphStyleArc,GrphStyleSommet,Poids,GrphStylepoids,DistElem,DistEns,LargEns,NomAppli,CouleurE,CouleurAppli,CouleurF,CouleursFleches,TypeFleche,Epaisseur,Labels,Ensembles,PosLabels,PoliceLabels,Offset,NomApplis,CouleursAppli,VF,LargeursColonnes,CouleurEnonce,CodeAvant,CodeApres,StyleAlternatif,PoliceTT},%
 		keywordstyle={\color{orange}}
 	},%
 	#1
@@ -205,7 +205,7 @@
 	\KarnaughBlocRegroup[Type=Droite,Couleur=red!75,Decalage=-1.5pt]{40}{31}
 \end{TableKarnaugh}
 \hspace{1cm}
-\begin{TableKarnaugh}[Variables=u/v/w,Swap,CouleurCases=lime]<scale=0.9,baseline=(current bounding box.center)>
+\begin{TableKarnaugh}[Variables=u/v/w,Swap,CouleurCases=lime,PoliceTT]<scale=0.9,baseline=(current bounding box.center)>
 	\KarnaughCasesResult*{1,1,1,1,1,0,0,0}
 	\KarnaughBlocRegroup[Type=Centre,Couleur=blue!75,Decalage=-1.5pt]{00}{12}
 	\KarnaughBlocRegroup[Type=Centre,Couleur=red!75,Decalage=-1.15pt]{01}{42}
@@ -254,6 +254,10 @@
 \newpage
 
 \section{Historique}
+
+\verb|v0.1.4|~:~~~~Possibilité de remplir une table de Karnaugh sans virgule
+
+\verb|v0.1.3|~:~~~~Style alternatif et Clé \Cle{PoliceTT} pour les tables de Karnaugh
 
 \verb|v0.1.2|~:~~~~Clé \Cle{Offset} pour les diagrammes sagittaux + Diagrammes sagittaux de composées.
 
@@ -645,14 +649,14 @@ Les commandes à utiliser dans l'environnement sont :
 \begin{DemoCode}[]
 \begin{TableKarnaugh}[Aide]
 \end{TableKarnaugh}
-\hspace{0.5cm}
+\hspace{0.25cm}
 \begin{TableKarnaugh}[Variables=u/v/w]
 	\KarnaughCasesResult{0,1,1,0,1,1,1,1}
 	\KarnaughBlocRegroup[Type=Centre,Couleur=blue!75,Decalage=-1.5pt]{10}{32}
 	\KarnaughBlocRegroup[Type=Gauche,Couleur=red!75,Decalage=-1.5pt]{00}{11}
 	\KarnaughBlocRegroup[Type=Droite,Couleur=red!75,Decalage=-1.5pt]{40}{31}
 \end{TableKarnaugh}
-\hspace{0.5cm}
+\hspace{0.25cm}
 \begin{TableKarnaugh}[Variables=u/v/w,Swap]
 \end{TableKarnaugh}
 
@@ -690,6 +694,9 @@ En ce qui concerne la création de l'environnement, les \Cle{clés} sont :
 	\item \Cle{CouleurLegende} := couleur de la légende, via \Cle{Couleur} ou \Cle{CouleurA/CouleurB/CouleurC} ;
 	
 	\hfill~défaut : \Cle{black}
+	\item \Cle{StyleAternatif} := booléen pour changer de style ; \hfill~défaut : \Cle{false}
+	\item \Cle{AideAlt} := booléen pour (dés)activer le label \textit{binaire} des cases ; \hfill~défaut : \Cle{true}
+	\item \Cle{PoliceTT} := booléen pour forcer les labels en police télétype ; \hfill~défaut : \Cle{false}
 	\item \Cle{PosVarLaterale} := position de la variable \textit{latérale}.\hfill~défaut : \Cle{Gauche}
 \end{itemize}
 
@@ -712,7 +719,8 @@ En ce qui concerne le remplissage des cases :
 	\item l'argument obligatoire, et entre \texttt{\{....\}} est la liste des cases, de gauche à droite en partant de la ligne du haut ;
 	\item la couleur de cases est gérée par la clé idoine de l'environnement.
 \end{itemize}
-\vspace*{-\baselineskip}\leavevmode
+
+À noter que la liste peut être donnée sous forme \Cle{\{1,0,1,0,0,0,0,0\}} ou \Cle{\{1010000\}}
 \end{tipblock}
 
 \subsection{Arguments et clés pour la commande de regroupement des blocs}
@@ -754,7 +762,7 @@ Les deux arguments obligatoires, et entre \texttt{\{...\}}, correspondent aux \t
 \end{TableKarnaugh}
 \hspace{5mm}
 \begin{TableKarnaugh}[Aide]
-	\KarnaughCasesResult{0,1,1,0,1,1,1,1}
+	\KarnaughCasesResult{01101111}
 	\KarnaughBlocRegroup[Type=Centre,Couleur=orange,Decalage=-1.5pt]{10}{32}
 	\KarnaughBlocRegroup[Type=Gauche,Couleur=teal,Decalage=-1.5pt]{00}{11}
 	\KarnaughBlocRegroup[Type=Droite,Couleur=teal,Decalage=-1.5pt]{40}{31}
@@ -771,8 +779,27 @@ Les deux arguments obligatoires, et entre \texttt{\{...\}}, correspondent aux \t
 \begin{DemoCode}[]
 On obtient le tableau de Karnaugh suivant : 
 \begin{TableKarnaugh}
-		[Variables=k/l/m,Unite=1.25cm,CouleurCases=cyan!25,Couleur=darkgray, PosVarLaterale=Droite,CouleurLegende=black/blue/red]
+		[Variables=k/l/m,Unite=1.25cm,CouleurCases=cyan!25,Couleur=darkgray,
+		PosVarLaterale=Droite,CouleurLegende=black/blue/red]
 		<baseline=(current bounding box.center)>
+	\KarnaughCasesResult*{1,1,1,0,1,1,1,0}
+	\KarnaughBlocRegroup[Type=Centre,Couleur=brown,Decalage=-3pt]{00}{22}
+	\KarnaughBlocRegroup[Type=Centre,Couleur=teal,Decalage=-1.5pt]{10}{32}
+\end{TableKarnaugh}
+\end{DemoCode}
+
+\begin{DemoCode}[]
+\begin{TableKarnaugh}
+	[Variables=k/l/m,Unite=1.25cm,Couleur=darkgray, PosVarLaterale=Droite,CouleurLegende=black/blue/red,
+	StyleAlternatif]
+	\KarnaughCasesResult{11101110}
+	\KarnaughBlocRegroup[Type=Centre,Couleur=brown,Decalage=-3pt]{00}{22}
+	\KarnaughBlocRegroup[Type=Centre,Couleur=teal,Decalage=-1.5pt]{10}{32}
+\end{TableKarnaugh}
+\hspace{5mm}
+\begin{TableKarnaugh}
+	[Variables=k/l/m,Unite=1.25cm,CouleurCases=cyan!25,Couleur=darkgray, PosVarLaterale=Droite,CouleurLegende=black/blue/red,
+	PoliceTT]
 	\KarnaughCasesResult*{1,1,1,0,1,1,1,0}
 	\KarnaughBlocRegroup[Type=Centre,Couleur=brown,Decalage=-3pt]{00}{22}
 	\KarnaughBlocRegroup[Type=Centre,Couleur=teal,Decalage=-1.5pt]{10}{32}

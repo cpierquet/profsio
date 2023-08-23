@@ -3,7 +3,9 @@
 %            : Luatruthtable from Chetan Shirore and Dr. Ajit Kumar https://ctan.org/pkg/luatruthtable
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{ProfSio}[2023/07/03 0.1.2 Pour les enseignants en BTS SIO]
+\ProvidesPackage{ProfSio}[2023/08/23 0.1.4 Pour les enseignants en BTS SIO]
+%0.1.4	Possibilité de remplir une table de Karnaugh sans virgule
+%0.1.3	Style alternatif et Clé [PoliceTT] pour les tables de Karnaugh
 %0.1.2	Ajout d'une option [Offset] pour les diagrammes sagittaux + Diagrammes sagittaux de composée + Tables de vérité
 %0.1.1	Correction de la documentation + Ajout des diagrammes sagittaux
 %0.1.0	Version initiale
@@ -239,7 +241,10 @@
 	Legende=true,%
 	Couleur=black,%
 	PosVarLaterale=Gauche,%
-	CouleurLegende=black
+	CouleurLegende=black,
+	StyleAlternatif=false,%
+	AideAlt=true,%
+	PoliceTT=false
 }
 
 \NewDocumentEnvironment{TableKarnaugh}{ O{} D<>{} }%
@@ -268,36 +273,65 @@
 		\coordinate (A02) at (0,2) ; \coordinate (A12) at (1,2) ;
 		\coordinate (A22) at (2,2) ; \coordinate (A32) at (3,2) ;
 		\coordinate (A42) at (4,2) ;
-		\ifboolKV[tblkgh]{Legende}
-			{%
-				\draw[\KGHTCoulLegendeB,line width=\KGHThick,decorate,decoration={brace,amplitude=7pt}](0,2.1)--(2,2.1) node[midway,above=7pt,inner sep=1pt,text=\KGHTCoulLegendeB,outer sep=0pt] {$\strut\mathtt{\ListeVariablesKGH[2]}$};
-				\draw[\KGHTCoulLegendeB,line width=\KGHThick,decorate,decoration={brace,amplitude=7pt}](2,2.1)--(4,2.1) node[midway,above=7pt,inner sep=1pt,text=\KGHTCoulLegendeB,outer sep=0pt] {$\strut\mathtt{\overline{\ListeVariablesKGH[2]}}$};
-				\ifboolKV[tblkgh]{Swap}%
-					{%
-						\draw[\KGHTCoulLegendeC,line width=\KGHThick,decorate,decoration={brace,amplitude=7pt,mirror}](1,-0.1)--(3,-0.1) node[midway,below=7pt,inner sep=1pt,text=\KGHTCoulLegendeC,outer sep=0pt] {$\strut\mathtt{\ListeVariablesKGH[3]}$};
-						\node[\KGHTCoulLegendeC,inner sep=1pt,below=7pt,outer sep=0pt] at (0.5,-0.1) {$\strut\mathtt{\overline{\ListeVariablesKGH[3]}}$};
-						\node[\KGHTCoulLegendeC,inner sep=1pt,below=7pt,outer sep=0pt] at (3.5,-0.1) {$\strut\mathtt{\overline{\ListeVariablesKGH[3]}}$};
+		\ifboolKV[tblkgh]{StyleAlternatif}%
+			{
+				\draw[line width=\KGHThick,\KGHTCoul] (A02)--++({-0.5*sqrt(2)},{0.5*sqrt(2)}) ;
+				\ifboolKV[tblkgh]{Legende}
+					{% 
+						\draw[\KGHTCoulLegendeC,line width=\KGHThick] (-7pt,0)--++(0,1) node[midway,left=3pt,inner sep=1pt,text=\KGHTCoulLegendeC,outer sep=0pt] { \ifboolKV[tblkgh]{PoliceTT}{$\strut\mathtt{\ListeVariablesKGH[3]}$}{$\strut{\ListeVariablesKGH[3]}$} } ;
+						\draw[\KGHTCoulLegendeA,line width=\KGHThick] ($(A22)+(0,7pt)$)--++(2,0) node[midway,above,inner sep=1pt,text=\KGHTCoulLegendeA,outer sep=0pt] { \ifboolKV[tblkgh]{PoliceTT}{$\strut\mathtt{\ListeVariablesKGH[1]}$}{$\strut{\ListeVariablesKGH[1]}$} } ;
+						\draw[\KGHTCoulLegendeB,line width=\KGHThick] ($(A10)+(0,-7pt)$)--++(2,0) node[midway,below,inner sep=1pt,text=\KGHTCoulLegendeB,outer sep=0pt] { \ifboolKV[tblkgh]{PoliceTT}{$\strut\mathtt{\ListeVariablesKGH[2]}$}{$\strut{\ListeVariablesKGH[2]}$} } ;
+						\draw ($({-0.25*sqrt(2)},{2+0.25*sqrt(2)})+(-135:10pt)$) node[inner sep=1pt,text=\KGHTCoulLegendeC,outer sep=0pt] { \ifboolKV[tblkgh]{PoliceTT}{$\strut\mathtt{\ListeVariablesKGH[3]}$}{$\strut{\ListeVariablesKGH[3]}$} } ;
+						\draw ($({-0.25*sqrt(2)},{2+0.25*sqrt(2)})+(45:10pt)$) node[inner sep=1pt,outer sep=0pt] { \ifboolKV[tblkgh]{PoliceTT}{$\strut\mathtt{\mathcolor{\KGHTCoulLegendeA}{\ListeVariablesKGH[1]}\mathcolor{\KGHTCoulLegendeB}{\ListeVariablesKGH[2]}}$}{$\strut{\mathcolor{\KGHTCoulLegendeA}{\ListeVariablesKGH[1]}\mathcolor{\KGHTCoulLegendeB}{\ListeVariablesKGH[2]}}$} } ;
 					}%
-					{%
-						\draw[\KGHTCoulLegendeC,line width=\KGHThick,decorate,decoration={brace,amplitude=7pt,mirror}](1,-0.1)--(3,-0.1) node[midway,below=7pt,inner sep=1pt,text=\KGHTCoulLegendeC,outer sep=0pt] {$\strut\mathtt{\overline{\ListeVariablesKGH[3]}}$};
-						\node[\KGHTCoulLegendeC,inner sep=1pt,below=7pt,outer sep=0pt] at (0.5,-0.1) {$\strut\mathtt{\ListeVariablesKGH[3]}$};
-						\node[\KGHTCoulLegendeC,inner sep=1pt,below=7pt,outer sep=0pt] at (3.5,-0.1) {$\strut\mathtt{\ListeVariablesKGH[3]}$};
-					}%
-				\IfStrEq{\KGHTPosVarA}{Gauche}
-					{%
-						\node[\KGHTCoulLegendeA,inner sep=1pt,outer sep=0pt,left=8pt] at (0,0.5) {$\strut\mathtt{\overline{\ListeVariablesKGH[1]}}$};
-						\node[\KGHTCoulLegendeA,inner sep=1pt,outer sep=0pt,left=8pt] at (0,1.5) {$\strut\mathtt{\ListeVariablesKGH[1]}$};
-					}{}%
-				\IfStrEq{\KGHTPosVarA}{Droite}
-					{%
-						\node[\KGHTCoulLegendeA,inner sep=1pt,outer sep=0pt,right=8pt] at (4,0.5) {$\strut\mathtt{\overline{\ListeVariablesKGH[1]}}$};
-						\node[\KGHTCoulLegendeA,inner sep=1pt,outer sep=0pt,right=8pt] at (4,1.5) {$\strut\mathtt{\ListeVariablesKGH[1]}$};
-					}{}%
+					{}%
 			}%
-			{}%
+			{%
+				\ifboolKV[tblkgh]{Legende}
+					{%
+						\draw[\KGHTCoulLegendeB,line width=\KGHThick,decorate,decoration={brace,amplitude=7pt}](0,2.1)--(2,2.1) node[midway,above=7pt,inner sep=1pt,text=\KGHTCoulLegendeB,outer sep=0pt] { \ifboolKV[tblkgh]{PoliceTT}{$\strut\mathtt{\ListeVariablesKGH[2]}$}{$\strut{\ListeVariablesKGH[2]}$} };
+						\draw[\KGHTCoulLegendeB,line width=\KGHThick,decorate,decoration={brace,amplitude=7pt}](2,2.1)--(4,2.1) node[midway,above=7pt,inner sep=1pt,text=\KGHTCoulLegendeB,outer sep=0pt] { \ifboolKV[tblkgh]{PoliceTT}{$\strut\mathtt{\overline{\ListeVariablesKGH[2]}}$}{$\strut{\overline{\ListeVariablesKGH[2]}}$} };
+						\ifboolKV[tblkgh]{Swap}%
+							{%
+								\draw[\KGHTCoulLegendeC,line width=\KGHThick,decorate,decoration={brace,amplitude=7pt,mirror}](1,-0.1)--(3,-0.1) node[midway,below=7pt,inner sep=1pt,text=\KGHTCoulLegendeC,outer sep=0pt] { \ifboolKV[tblkgh]{PoliceTT}{$\strut\mathtt{\ListeVariablesKGH[3]}$}{$\strut{\ListeVariablesKGH[3]}$} };
+								\node[\KGHTCoulLegendeC,inner sep=1pt,below=7pt,outer sep=0pt] at (0.5,-0.1) { \ifboolKV[tblkgh]{PoliceTT}{$\strut\mathtt{\overline{\ListeVariablesKGH[3]}}$}{$\strut{\overline{\ListeVariablesKGH[3]}}$} };
+								\node[\KGHTCoulLegendeC,inner sep=1pt,below=7pt,outer sep=0pt] at (3.5,-0.1) { \ifboolKV[tblkgh]{PoliceTT}{$\strut\mathtt{\overline{\ListeVariablesKGH[3]}}$}{$\strut{\overline{\ListeVariablesKGH[3]}}$} };
+							}%
+							{%
+								\draw[\KGHTCoulLegendeC,line width=\KGHThick,decorate,decoration={brace,amplitude=7pt,mirror}](1,-0.1)--(3,-0.1) node[midway,below=7pt,inner sep=1pt,text=\KGHTCoulLegendeC,outer sep=0pt] { \ifboolKV[tblkgh]{PoliceTT}{$\strut\mathtt{\overline{\ListeVariablesKGH[3]}}$}{$\strut{\overline{\ListeVariablesKGH[3]}}$} };
+								\node[\KGHTCoulLegendeC,inner sep=1pt,below=7pt,outer sep=0pt] at (0.5,-0.1) { \ifboolKV[tblkgh]{PoliceTT}{$\strut\mathtt{\ListeVariablesKGH[3]}$}{$\strut{\ListeVariablesKGH[3]}$} };
+								\node[\KGHTCoulLegendeC,inner sep=1pt,below=7pt,outer sep=0pt] at (3.5,-0.1) { \ifboolKV[tblkgh]{PoliceTT}{$\strut\mathtt{\ListeVariablesKGH[3]}$}{$\strut{\ListeVariablesKGH[3]}$} };
+							}%
+						\IfStrEq{\KGHTPosVarA}{Gauche}
+							{%
+								\node[\KGHTCoulLegendeA,inner sep=1pt,outer sep=0pt,left=8pt] at (0,0.5) { \ifboolKV[tblkgh]{PoliceTT}{$\strut\mathtt{\overline{\ListeVariablesKGH[1]}}$}{$\strut{\overline{\ListeVariablesKGH[1]}}$} };
+								\node[\KGHTCoulLegendeA,inner sep=1pt,outer sep=0pt,left=8pt] at (0,1.5) { \ifboolKV[tblkgh]{PoliceTT}{$\strut\mathtt{\ListeVariablesKGH[1]}$}{$\strut{\ListeVariablesKGH[1]}$} };
+							}{}%
+						\IfStrEq{\KGHTPosVarA}{Droite}
+							{%
+								\node[\KGHTCoulLegendeA,inner sep=1pt,outer sep=0pt,right=8pt] at (4,0.5) { \ifboolKV[tblkgh]{PoliceTT}{$\strut\mathtt{\overline{\ListeVariablesKGH[1]}}$}{$\strut{\overline{\ListeVariablesKGH[1]}}$} };
+								\node[\KGHTCoulLegendeA,inner sep=1pt,outer sep=0pt,right=8pt] at (4,1.5) { \ifboolKV[tblkgh]{PoliceTT}{$\strut\mathtt{\ListeVariablesKGH[1]}$}{$\strut{\ListeVariablesKGH[1]}$} };
+							}{}%
+					}%
+					{}%
+			}%
 		\draw[line width=\KGHThick,step=1,ystep=1,\KGHTCoul] (0,0) grid (4,2) ; \draw[line width=\KGHThick,\KGHTCoul] (0,0) rectangle (4,2) ;
 	}%
 	{%
+		\ifboolKV[tblkgh]{StyleAlternatif}%
+			{%
+				\ifboolKV[tblkgh]{AideAlt}%
+					{%
+						\draw (A02) node[below right=2pt,inner sep=1pt,font=\scriptsize] {000} ;
+						\draw (A12) node[below right=2pt,inner sep=1pt,font=\scriptsize] {010} ;
+						\draw (A22) node[below right=2pt,inner sep=1pt,font=\scriptsize] {110} ;
+						\draw (A32) node[below right=2pt,inner sep=1pt,font=\scriptsize] {100} ;
+						\draw (A01) node[below right=2pt,inner sep=1pt,font=\scriptsize] {001} ;
+						\draw (A11) node[below right=2pt,inner sep=1pt,font=\scriptsize] {011} ;
+						\draw (A21) node[below right=2pt,inner sep=1pt,font=\scriptsize] {111} ;
+						\draw (A31) node[below right=2pt,inner sep=1pt,font=\scriptsize] {101} ;
+					}{}%
+			}{}%
 		\ifboolKV[tblkgh]{Aide}%
 			{%
 				\foreach \noeud in {00,10,20,30,40,01,11,21,31,41,02,12,22,32,42}
@@ -330,28 +364,56 @@
 }
 
 \NewDocumentCommand\KarnaughCasesResult{ s m }{%
-	\setsepchar{,}%
-	\readlist*\KGHListeResult{#2}%
 	\IfBooleanTF{#1}%
 		{%
-			\xintifboolexpr{\KGHListeResult[1] == 1}{\draw[line width=\KGHThick,fill=\KGHTCoulCases,draw=\KGHTCoul] (A01) rectangle (A12) ;}{}%
-			\xintifboolexpr{\KGHListeResult[2] == 1}{\draw[line width=\KGHThick,fill=\KGHTCoulCases,draw=\KGHTCoul] (A11) rectangle (A22) ;}{}%
-			\xintifboolexpr{\KGHListeResult[3] == 1}{\draw[line width=\KGHThick,fill=\KGHTCoulCases,draw=\KGHTCoul] (A21) rectangle (A32) ;}{}%
-			\xintifboolexpr{\KGHListeResult[4] == 1}{\draw[line width=\KGHThick,fill=\KGHTCoulCases,draw=\KGHTCoul] (A31) rectangle (A42) ;}{}%
-			\xintifboolexpr{\KGHListeResult[5] == 1}{\draw[line width=\KGHThick,fill=\KGHTCoulCases,draw=\KGHTCoul] (A00) rectangle (A11) ;}{}%
-			\xintifboolexpr{\KGHListeResult[6] == 1}{\draw[line width=\KGHThick,fill=\KGHTCoulCases,draw=\KGHTCoul] (A10) rectangle (A21) ;}{}%
-			\xintifboolexpr{\KGHListeResult[7] == 1}{\draw[line width=\KGHThick,fill=\KGHTCoulCases,draw=\KGHTCoul] (A20) rectangle (A31) ;}{}%
-			\xintifboolexpr{\KGHListeResult[8] == 1}{\draw[line width=\KGHThick,fill=\KGHTCoulCases,draw=\KGHTCoul] (A30) rectangle (A41) ;}{}%
+			\IfSubStr{#2}{,}%
+				{%
+					\setsepchar{,}%
+					\readlist*\KGHListeResult{#2}%
+					\xintifboolexpr{\KGHListeResult[1] == 1}{\draw[line width=\KGHThick,fill=\KGHTCoulCases,draw=\KGHTCoul] (A01) rectangle (A12) ;}{}%
+					\xintifboolexpr{\KGHListeResult[2] == 1}{\draw[line width=\KGHThick,fill=\KGHTCoulCases,draw=\KGHTCoul] (A11) rectangle (A22) ;}{}%
+					\xintifboolexpr{\KGHListeResult[3] == 1}{\draw[line width=\KGHThick,fill=\KGHTCoulCases,draw=\KGHTCoul] (A21) rectangle (A32) ;}{}%
+					\xintifboolexpr{\KGHListeResult[4] == 1}{\draw[line width=\KGHThick,fill=\KGHTCoulCases,draw=\KGHTCoul] (A31) rectangle (A42) ;}{}%
+					\xintifboolexpr{\KGHListeResult[5] == 1}{\draw[line width=\KGHThick,fill=\KGHTCoulCases,draw=\KGHTCoul] (A00) rectangle (A11) ;}{}%
+					\xintifboolexpr{\KGHListeResult[6] == 1}{\draw[line width=\KGHThick,fill=\KGHTCoulCases,draw=\KGHTCoul] (A10) rectangle (A21) ;}{}%
+					\xintifboolexpr{\KGHListeResult[7] == 1}{\draw[line width=\KGHThick,fill=\KGHTCoulCases,draw=\KGHTCoul] (A20) rectangle (A31) ;}{}%
+					\xintifboolexpr{\KGHListeResult[8] == 1}{\draw[line width=\KGHThick,fill=\KGHTCoulCases,draw=\KGHTCoul] (A30) rectangle (A41) ;}{}%
+				}%
+				{%
+					\StrChar{#2}{1}[\TmpCharA]\xintifboolexpr{\TmpCharA == 1}{\draw[line width=\KGHThick,fill=\KGHTCoulCases,draw=\KGHTCoul] (A01) rectangle (A12) ;}{}%
+					\StrChar{#2}{2}[\TmpCharB]\xintifboolexpr{\TmpCharB == 1}{\draw[line width=\KGHThick,fill=\KGHTCoulCases,draw=\KGHTCoul] (A11) rectangle (A22) ;}{}%
+					\StrChar{#2}{3}[\TmpCharC]\xintifboolexpr{\TmpCharC == 1}{\draw[line width=\KGHThick,fill=\KGHTCoulCases,draw=\KGHTCoul] (A21) rectangle (A32) ;}{}%
+					\StrChar{#2}{4}[\TmpCharD]\xintifboolexpr{\TmpCharD == 1}{\draw[line width=\KGHThick,fill=\KGHTCoulCases,draw=\KGHTCoul] (A31) rectangle (A42) ;}{}%
+					\StrChar{#2}{5}[\TmpCharE]\xintifboolexpr{\TmpCharE == 1}{\draw[line width=\KGHThick,fill=\KGHTCoulCases,draw=\KGHTCoul] (A00) rectangle (A11) ;}{}%
+					\StrChar{#2}{6}[\TmpCharF]\xintifboolexpr{\TmpCharF == 1}{\draw[line width=\KGHThick,fill=\KGHTCoulCases,draw=\KGHTCoul] (A10) rectangle (A21) ;}{}%
+					\StrChar{#2}{7}[\TmpCharG]\xintifboolexpr{\TmpCharG == 1}{\draw[line width=\KGHThick,fill=\KGHTCoulCases,draw=\KGHTCoul] (A20) rectangle (A31) ;}{}%
+					\StrChar{#2}{8}[\TmpCharH]\xintifboolexpr{\TmpCharH == 1}{\draw[line width=\KGHThick,fill=\KGHTCoulCases,draw=\KGHTCoul] (A30) rectangle (A41) ;}{}%
+				}%
 		}%
 		{%
-			\draw (0.5,1.5) node[text=\KGHTCoulCases!50!black,font=\large\ttfamily] {\KGHListeResult[1]} ;
-			\draw (1.5,1.5) node[text=\KGHTCoulCases!50!black,font=\large\ttfamily] {\KGHListeResult[2]} ;
-			\draw (2.5,1.5) node[text=\KGHTCoulCases!50!black,font=\large\ttfamily] {\KGHListeResult[3]} ;
-			\draw (3.5,1.5) node[text=\KGHTCoulCases!50!black,font=\large\ttfamily] {\KGHListeResult[4]} ;
-			\draw (0.5,0.5) node[text=\KGHTCoulCases!50!black,font=\large\ttfamily] {\KGHListeResult[5]} ;
-			\draw (1.5,0.5) node[text=\KGHTCoulCases!50!black,font=\large\ttfamily] {\KGHListeResult[6]} ;
-			\draw (2.5,0.5) node[text=\KGHTCoulCases!50!black,font=\large\ttfamily] {\KGHListeResult[7]} ;
-			\draw (3.5,0.5) node[text=\KGHTCoulCases!50!black,font=\large\ttfamily] {\KGHListeResult[8]} ;
+			\IfSubStr{#2}{,}%
+				{%
+					\setsepchar{,}%
+					\readlist*\KGHListeResult{#2}%
+					\draw (0.5,1.5) node[text=\KGHTCoulCases!50!black,font=\large\ttfamily] {\KGHListeResult[1]} ;
+					\draw (1.5,1.5) node[text=\KGHTCoulCases!50!black,font=\large\ttfamily] {\KGHListeResult[2]} ;
+					\draw (2.5,1.5) node[text=\KGHTCoulCases!50!black,font=\large\ttfamily] {\KGHListeResult[3]} ;
+					\draw (3.5,1.5) node[text=\KGHTCoulCases!50!black,font=\large\ttfamily] {\KGHListeResult[4]} ;
+					\draw (0.5,0.5) node[text=\KGHTCoulCases!50!black,font=\large\ttfamily] {\KGHListeResult[5]} ;
+					\draw (1.5,0.5) node[text=\KGHTCoulCases!50!black,font=\large\ttfamily] {\KGHListeResult[6]} ;
+					\draw (2.5,0.5) node[text=\KGHTCoulCases!50!black,font=\large\ttfamily] {\KGHListeResult[7]} ;
+					\draw (3.5,0.5) node[text=\KGHTCoulCases!50!black,font=\large\ttfamily] {\KGHListeResult[8]} ;
+				}%
+				{%
+					\draw (0.5,1.5) node[text=\KGHTCoulCases!50!black,font=\large\ttfamily] {\StrChar{#2}{1}} ;
+					\draw (1.5,1.5) node[text=\KGHTCoulCases!50!black,font=\large\ttfamily] {\StrChar{#2}{2}} ;
+					\draw (2.5,1.5) node[text=\KGHTCoulCases!50!black,font=\large\ttfamily] {\StrChar{#2}{3}} ;
+					\draw (3.5,1.5) node[text=\KGHTCoulCases!50!black,font=\large\ttfamily] {\StrChar{#2}{4}} ;
+					\draw (0.5,0.5) node[text=\KGHTCoulCases!50!black,font=\large\ttfamily] {\StrChar{#2}{5}} ;
+					\draw (1.5,0.5) node[text=\KGHTCoulCases!50!black,font=\large\ttfamily] {\StrChar{#2}{6}} ;
+					\draw (2.5,0.5) node[text=\KGHTCoulCases!50!black,font=\large\ttfamily] {\StrChar{#2}{7}} ;
+					\draw (3.5,0.5) node[text=\KGHTCoulCases!50!black,font=\large\ttfamily] {\StrChar{#2}{8}} ;
+				}%
 		}%
 }
 
