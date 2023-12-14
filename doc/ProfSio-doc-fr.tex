@@ -5,8 +5,8 @@
 
 \documentclass[french,a4paper,11pt]{article}
 \usepackage[margin=2cm,includefoot]{geometry}
-\def\TPversion{0.1.5}
-\def\TPdate{13 septembre 2023}
+\def\TPversion{0.1.9}
+\def\TPdate{13 décembre 2023}
 %\usepackage[utf8]{inputenc}
 %\usepackage[T1]{fontenc}
 \usepackage{amsmath,amssymb}
@@ -81,10 +81,10 @@
 		keywordstyle={\color{violet}},%
 		classoffset=2,%
 		alsoletter={-},%
-		morekeywords={\MPMPlaceTache,\MPMPlaceNotice,\MPMPlaceDuree,GrapheMPM,TableKarnaugh,\KarnaughCasesResult,\KarnaughBlocRegroup,\MPMPlaceTaches,\MPMPlaceDurees,GrapheTikz,\GrphPlaceSommets,\GrphTraceAretes,\tikzset,\DiagrammeSagittal,\draw,\DiagrammeSagittalCompo,\TableVerite,\SimplificationKarnaugh},%
+		morekeywords={\MPMPlaceTache,\MPMPlaceNotice,\MPMPlaceDuree,GrapheMPM,TableKarnaugh,\KarnaughCasesResult,\KarnaughBlocRegroup,\MPMPlaceTaches,\MPMPlaceDurees,GrapheTikz,\GrphPlaceSommets,\GrphTraceAretes,\tikzset,\DiagrammeSagittal,\draw,\DiagrammeSagittalCompo,\TableVerite,\SimplificationKarnaugh,\SimplificationBooleenne,\KarnaughCasesAuto,\MatriceAdjacence,\PuissanceMatrice,\NbCheminsLongueur,\FermetureTransitive},%
 		keywordstyle={\color{green!50!black}},%
 		classoffset=3,%
-		morekeywords={CouleurDurees,CouleurFleches,LargeurCases,Epaisseur,Police,CouleurDates,CouleurBords,NoirBlanc,Grille,DecalHorizDeb,DecalVertDeb,DecalHorizFin,DecalVertFin,Coude,SensCoude,Unite,Variables,Swap,Aide,CouleurCases,Decalage,Couleur,Type,Legende,PosVarLaterale,CouleurLegende,CouleurSommets,TypeSommets,Unite,CouleurFT,DimensionSommets,PositionFleches,EchelleFleches,TypeFleche,Droit,Milieu,AngleGauche,AngleDroite,Boucle,GrphStyleArc,GrphStyleSommet,Poids,GrphStylepoids,DistElem,DistEns,LargEns,NomAppli,CouleurE,CouleurAppli,CouleurF,CouleursFleches,TypeFleche,Epaisseur,Labels,Ensembles,PosLabels,PoliceLabels,Offset,NomApplis,CouleursAppli,VF,LargeursColonnes,CouleurEnonce,CodeAvant,CodeApres,StyleAlternatif,PoliceTT,Espace,Couleurs},%
+		morekeywords={CouleurDurees,CouleurFleches,LargeurCases,Epaisseur,Police,CouleurDates,CouleurBords,NoirBlanc,Grille,DecalHorizDeb,DecalVertDeb,DecalHorizFin,DecalVertFin,Coude,SensCoude,Unite,Variables,Swap,Aide,CouleurCases,Decalage,Couleur,Type,Legende,PosVarLaterale,CouleurLegende,CouleurSommets,TypeSommets,Unite,CouleurFT,DimensionSommets,PositionFleches,EchelleFleches,TypeFleche,Droit,Milieu,AngleGauche,AngleDroite,Boucle,GrphStyleArc,GrphStyleSommet,Poids,GrphStylepoids,DistElem,DistEns,LargEns,NomAppli,CouleurE,CouleurAppli,CouleurF,CouleursFleches,TypeFleche,Epaisseur,Labels,Ensembles,PosLabels,PoliceLabels,Offset,NomApplis,CouleursAppli,VF,LargeursColonnes,CouleurEnonce,CodeAvant,CodeApres,StyleAlternatif,PoliceTT,Espace,Couleurs,Contraire,Enonce,Bordure,Sommets,Num,PoliceBordure,De,Vers,Formule,Brut,NomMatrice,Longueur,Complet},%
 		keywordstyle={\color{orange}}
 	},%
 	#1
@@ -159,7 +159,7 @@
 
 \vspace{0.15cm}
 
-{$\blacktriangleright$~~Créer des graphes simples ou des diagrammes sagittaux.
+{$\blacktriangleright$~~Créer des graphes simples ou des diagrammes sagittaux, travailler sur les matrices.
 
 \vspace{0.15cm}
 
@@ -255,6 +255,14 @@
 
 \section{Historique}
 
+\verb|v0.1.9|~:~~~~Travail sur les matrices d'adjacence (chemins, puissances, fermeture)
+
+\verb|v0.1.8|~:~~~~Possibilité de créer le tableau de Karnaugh via une expression booléenne  + Corrections mineures
+
+\verb|v0.1.7|~:~~~~Possibilité de simplifier une expression booléenne \textit{directement} + amélioration des espaces
+
+\verb|v0.1.6|~:~~~~Correction dans les simplifications de Karnaugh + Simplification du contraire
+
 \verb|v0.1.5|~:~~~~Commande pour simplifier une table de Karnaugh à trois variables
 
 \verb|v0.1.4|~:~~~~Possibilité de remplir une table de Karnaugh sans virgule
@@ -279,20 +287,20 @@
 Le package \packagetex!ProfSio! propose quelques commandes pour travailler sur des points particuliers de Mathématiques enseignées en BTS SIO :
 
 \begin{itemize}
-	\item graphe d'ordonnancement par la méthode MPM ;
-	\item tableau de Karnaugh à 3 variables ;
+	\item graphes d'ordonnancement par la méthode MPM ;
+	\item expressions booléennes et tableaux de Karnaugh pour 3 variables ;
 	\item graphes \textit{simples} orientés ou pondérés, des diagrammes sagittaux ;
-	\item des tables de vérité (via \hologo{LuaLaTeX}).
+	\item tables de vérité (via \hologo{LuaLaTeX}).
 \end{itemize}
 \vspace*{-\baselineskip}\leavevmode
 \end{noteblock}
 
 \begin{warningblock}
-Le code ne propose par de \og résolution \fg{} du graphe MPM, de \og simplification \fg{} d'expressions booléennes ou de représentation \og automatique \fg{} d'un graphe, il ne consiste \textit{qu'en} une mise en forme du graphe MPM, du tableau de Karnaugh ou du graphe.
+Le code ne propose par de \og résolution \fg{} du graphe MPM ou de représentation \og automatique \fg{} d'un graphe, il ne consiste \textit{qu'en} une mise en forme du graphe MPM, du tableau de Karnaugh ou du graphe.
 
 \smallskip
 
-Par contre, pour les tables de vérité, le code se charge de créer le tableau \underline{entièrement}, grâce aux données du package \packagetex!luatruthtable! (légèrement \textit{patchées} pour obtenir une alternance un peu plus homogène).
+Cependant, il est propose de \og simplifier \fg{} des expressions booléennes, et pour les tables de vérité, le code se charge de créer le tableau \underline{entièrement}, grâce aux données du package \packagetex!luatruthtable! (légèrement \textit{patchées}.
 \end{warningblock}
 
 \subsection{Chargement du package, packages utilisés}
@@ -631,7 +639,8 @@ C'est en fait un environnement \motcletex!tikzpicture! personnalisé.
 Les commandes à utiliser dans l'environnement sont :
 
 \begin{itemize}
-	\item \motcletex!\KarnaughCasesResult! ;
+	\item \motcletex!\KarnaughCasesResult! pour saisir les cases par codage binaire ;
+	\item \motcletex!\KarnaughCasesAuto! pour utiliser l'expression booléenne ;
 	\item \motcletex!\KarnaughBlocRegroup! ;.
 \end{itemize}
 \vspace*{-\baselineskip}\leavevmode
@@ -639,7 +648,8 @@ Les commandes à utiliser dans l'environnement sont :
 
 \begin{DemoCode}[listing only]
 \begin{TableKarnaugh}[clés]<options tikz>
-	\KarnaughCasesResult(*){contenu binaire des cases}
+	\KarnaughCasesResult(*){contenu binaire des cases} %case par case
+	\KarnaughCasesAuto(*){expression booléenne} %par une formule
 	\KarnaughBlocRegroup[clés]{coinA}{coinB}
 \end{TableKarnaugh}
 \end{DemoCode}
@@ -671,8 +681,6 @@ Les commandes à utiliser dans l'environnement sont :
 \begin{tipblock}
 Le tableau créé également des nœuds, qui seront utilisés pour effectuer des \textit{regroupements} de cases, afin de simplifier une expression booléenne.
 \end{tipblock}
-
-\pagebreak
 
 \subsection{Arguments et clés pour l'environnement}
 
@@ -710,11 +718,13 @@ Le deuxième argument, optionnel et entre \texttt{<...>} propose des options, en
 \begin{DemoCode}[listing only]
 \begin{TableKarnaugh}[clés]<options tikz>
 	\KarnaughCasesResult(*){contenu binaire des cases}
+	%ou
+	\KarnaughCasesAuto(*){expression booléenne}
 \end{TableKarnaugh}
 \end{DemoCode}
 
 \begin{tipblock}
-En ce qui concerne le remplissage des cases :
+En ce qui concerne le remplissage des cases avec la commande \texttt{\textbackslash KarnaughCasesResult} :
 
 \begin{itemize}
 	\item la version \textit{étoilée} permet de \textit{griser} les cases au lieu de les remplir de \texttt{0/1} ;
@@ -722,8 +732,34 @@ En ce qui concerne le remplissage des cases :
 	\item la couleur de cases est gérée par la clé idoine de l'environnement.
 \end{itemize}
 
-À noter que la liste peut être donnée sous forme \Cle{\{1,0,1,0,0,0,0,0\}} ou \Cle{\{1010000\}}
+À noter que la liste peut être donnée sous forme \Cle{\{1,0,1,0,0,0,0,0\}} ou \Cle{\{1010000\}}.
 \end{tipblock}
+
+\begin{tipblock}
+Pour la commande \texttt{\textbackslash KarnaughCasesAuto}, c'est l'expression booléenne à trois variables sous forme de \textit{mintermes} simples, donnés :
+%
+\begin{itemize}
+	\item entre parenthèses ;
+	\item les \textit{mintermes} avec les variables dans le même ordre que celui donné en paramètre ;
+	\item avec \texttt{*} pour la barre.
+\end{itemize}
+\vspace*{-\baselineskip}\leavevmode
+\end{tipblock}
+
+\begin{DemoCode}[]
+\begin{TableKarnaugh}
+	\KarnaughCasesAuto*{(ab)+(a*b*)+(b*c)}
+\end{TableKarnaugh}
+\begin{TableKarnaugh}[Swap]
+	\KarnaughCasesAuto*{(ab)+(a*b*)+(b*c)}
+\end{TableKarnaugh}
+
+\begin{TableKarnaugh}[Variables=k/l/m,StyleAlternatif]
+	\KarnaughCasesAuto{(kl)+(k*l*)+(l*m)}
+\end{TableKarnaugh}
+\end{DemoCode}
+
+\pagebreak
 
 \subsection{Arguments et clés pour la commande de regroupement des blocs}
 
@@ -771,7 +807,7 @@ Les deux arguments obligatoires, et entre \texttt{\{...\}}, correspondent aux \t
 \end{TableKarnaugh}
 \hspace{5mm}
 \begin{TableKarnaugh}[Swap]
-	\KarnaughCasesResult{0,1,1,0,1,1,1,1}
+	\KarnaughCasesAuto{(ac)+(a*b)+(a*b*c*)+(b*c)}
 	\KarnaughBlocRegroup[Type=Centre,Couleur=teal,Decalage=-1.5pt]{10}{32}
 	\KarnaughBlocRegroup[Type=Gauche,Couleur=orange,Decalage=-1.5pt]{00}{11}
 	\KarnaughBlocRegroup[Type=Droite,Couleur=orange,Decalage=-1.5pt]{40}{31}
@@ -810,12 +846,12 @@ On obtient le tableau de Karnaugh suivant :
 
 \pagebreak
 
-\section{Simplification d'une expression booléene par table de Karnaugh}
+\section{Simplification d'une expression booléenne par table de Karnaugh}
 
 \subsection{Commande et fonctionnement global}
 
 \begin{cautionblock}
-L'idée est de proposer une commande pour simplifier une expression booléenne à trois variables connaissant sa table de vérité :
+L'idée est de proposer une commande pour simplifier une expression booléenne (ou son contraire) à trois variables connaissant sa table de vérité :
 
 \begin{itemize}
 	\item en utilisant une manière \textit{binaire} de déclarer la table de vérité ;
@@ -825,7 +861,7 @@ L'idée est de proposer une commande pour simplifier une expression booléenne �
 \end{cautionblock}
 
 \begin{importantblock}
-Je remercie mes étudiants de BTS SIO2 (promo 2023/2024) pour m'avoir aidé à simplifier les 256 (!) tables de Karnaugh possibles, en se répartissant le travail !
+Je remercie mes étudiants de BTS SIO2 (promo 2023/2024 : Léo, Ryad, Mathieu, Adrien, Clément) pour m'avoir aidé à simplifier les 256 (!) tables de Karnaugh possibles, en se répartissant le travail !
 
 \smallskip
 
@@ -841,7 +877,7 @@ La déclaration \textit{binaire} de la table suit les mêmes règles que pour la
 
 \begin{itemize}
 	\item la liste des cases soit être saisie, de gauche à droite en partant de la ligne du haut ;
-	\item elle doit être donnée en bianire, sans séparateur, comme \Cle{\{1010111\}} par exemple.
+	\item elle doit être donnée en binaire, sans séparateur, comme \Cle{\{1010111\}} par exemple.
 \end{itemize}
 \vspace*{-\baselineskip}\leavevmode
 \end{cautionblock}
@@ -854,6 +890,12 @@ Par \textbf{défaut}, le remplissage des cases est relatif à la configuration s
 	\end{TableKarnaugh}
 \end{center}
 \end{importantblock}
+
+\begin{tipblock}
+Un espace \textit{spécial} mathématique a été défini, pour notamment gérer l'espacement horizontal entre des variables booléennes, pour éviter que les barres soient \textit{collées}.
+
+Il s'agit de \texttt{\textbackslash §}, qui vaut \texttt{1.5mu}, et qui est utilisé pour écrire des expressions booléennes.
+\end{tipblock}
 
 \pagebreak
 
@@ -872,7 +914,10 @@ Les clés disponibles sont :
 	\hfill~défaut : \Cle{black/black/black}
 	\item \Cle{Variables} := variables utilisées ; \hfill~défaut : \Cle{a/b/c}
 	\item \Cle{Swap} := booléen pour échanger les variables du \textit{bas} ; \hfill~défaut : \Cle{false}
-	\item \Cle{Espace} := booléen pour rajouter un petit espace (\textit{fine}) dans les produits ;
+	\item \Cle{Contraire} := booléen pour travailler sur le contraire de l'expression booléenne ;
+	
+	\hfill~défault : \Cle{false}
+	\item \Cle{Espace} := booléen pour rajouter un petit espace (1.5~mu) dans les produits ;
 	
 	\hfill~défaut : \Cle{true}
 	\item \Cle{StyleAlternatif} := booléen pour changer de style. \hfill~défaut : \Cle{false}
@@ -901,6 +946,8 @@ La table de Karnaugh :
 	\KarnaughCasesResult*{11011111}
 \end{TableKarnaugh}~
 correspond à $E=\SimplificationKarnaugh[Swap]{11011111}$.
+
+Et $\overline{E}=\SimplificationKarnaugh[Swap,Contraire]{11011111}$.
 \end{DemoCode}
 
 \begin{DemoCode}
@@ -917,8 +964,77 @@ La table de Karnaugh :
 	\KarnaughCasesResult{11011001}
 \end{TableKarnaugh}~
 correspond à \SimplificationKarnaugh%
-	[StyleAlternatif,Espace=false,Couleurs={purple/blue/orange}]%
+	[StyleAlternatif,Couleurs={purple/blue/orange}]%
 	{11011001}
+\end{DemoCode}
+
+\pagebreak
+
+\section{Écriture et simplification d'une expression booléenne}
+
+\subsection{Commande et fonctionnement global}
+
+\begin{cautionblock}
+L'idée est de proposer une commande pour afficher et simplifier une expression booléenne à trois variables connaissant son expression sous forme de \textit{mintermes} simples, donnés : 
+%
+\begin{itemize}
+	\item entre parenthèses, et avec les variables dans le même ordre que celui donné en paramètre;
+	\item avec \texttt{*} pour la barre.
+\end{itemize}
+
+Par exemple :
+
+\begin{itemize}
+	\item $E=a\§b+\overline{a}\§\overline{b}$ sera saisie par \texttt{(ab)+(a*b*)} ;
+	\item $E=\overline{a}\§\overline{c} + \overline{a}\§\overline{b} + b\§c$ sera saisie par \texttt{(a*c*)+(a*b*)+(bc)}.
+\end{itemize}
+\vspace*{-\baselineskip}\leavevmode
+\end{cautionblock}
+
+%\begin{importantblock}
+%En interne, la commande utilise la simplification par table de Karnaugh, et la commande peut également se charger de formater le résultat brut de l'expression.
+%\end{importantblock}
+
+\subsection{Arguments et clés }
+
+\begin{DemoCode}[listing only]
+\SimplificationBooleenne[clés]{expression formatée}
+\end{DemoCode}
+
+\begin{tipblock}
+Les clés disponibles sont :
+
+\begin{itemize}
+	\item \Cle{Enonce} := booléen pour afficher l'expression booléenne brute ;  \hfill~défaut : \Cle{true}
+	\item \Cle{Variables} := variables utilisées ; \hfill~défaut : \Cle{a/b/c}
+	\item \Cle{Contraire} := booléen pour travailler sur le contraire ; \hfill~défaut : \Cle{false}
+	\item \Cle{Espace} := booléen pour rajouter un petit espace (1.5~mu) dans les produits.
+	
+	\hfill~défaut : \Cle{true}
+\end{itemize}
+
+L'argument obligatoire est quant à lui la déclaration \textit{brute} de l'expression booléenne, donnée avec les règles précédentes. À noter que le résultat est inséré dans un groupe \texttt{ensuremath}.
+\end{tipblock}
+
+\subsection{Exemples}
+
+\begin{DemoCode}
+$E = \SimplificationBooleenne{(a)+(a*)}$\\
+$E = a + \overline{a} = \SimplificationBooleenne[Enonce=false]{(a)+(a*)}$
+\end{DemoCode}
+
+\begin{DemoCode}
+On considère l'expression booléenne $E= g + g\§b + g\§\overline{b}\§n$ :\\
+$E = \SimplificationBooleenne[Variables=g/b/n]{(g)+(gb)+(gb*n)}$\\
+$E = \SimplificationBooleenne[Variables=g/b/n,Espace=false]{(g)+(gb)+(gb*n)}$
+\end{DemoCode}
+
+\begin{DemoCode}
+$\overline{E} = \SimplificationBooleenne[Contraire,Variables=g/b/n]{(g)+(gb)+(gb*n)}$
+\end{DemoCode}
+
+\begin{DemoCode}
+On a $F = \SimplificationBooleenne{(a)+(abc*)+(a*b*c)+(abc)+(a*bc)}$.
 \end{DemoCode}
 
 \pagebreak
@@ -1157,6 +1273,153 @@ Pour marquer une fermeture transitive, on peut utiliser le style \verb|FT| dans 
 	\GrphTraceAretes[AngleGauche]<FT>{A/C B/C B/D}
 	\GrphTraceAretes[Boucle]<FT>{C/-45 E/135 D/-135}
 \end{GrapheTikz}
+\end{DemoCode}
+
+\pagebreak
+
+\section{Matrice d'adjacence, fermeture transitive}
+
+\subsection{Commandes et fonctionnement global}
+
+\begin{tipblock}
+L'idée est de proposer des commandes pour travailler avec l'aspect matriciel des graphes :
+
+\begin{itemize}
+	\item afficher la matrice d'adjacence, avec bordure éventuelle ;
+	\item calculer la puissance $n$-ième d'une matrice d'adjacence, avec bordure éventuelle ;
+	\item déterminer le nombre de chemins de longueur donnée dans un graphe ;
+	\item déterminer la matrice de la fermeture transitive, avec bordure éventuelle.
+\end{itemize}
+
+Quelques éléments de personnalisations sont disponibles.
+\end{tipblock}
+
+\begin{warningblock}
+La commande est accessible \textbf{uniquement} en cas d'une compilation en \hologo{LuaLaTeX} !
+
+\smallskip
+
+Une \textbf{double compilation} peut être nécessaire pour le placement correct des filets !
+
+\smallskip
+
+Les calculs matriciels sont effectués par le package \packagetex!lualinalg! (\url{https://ctan.org/pkg/lualinalg}), mais les sorties sont parfois \textit{modifiées} pour une présentation adaptée avec des matrices bordées.
+
+\smallskip
+
+Les matrices sont à déclarer sous une forme particulière, sous la forme \verb|{{ligne1},{ligne2},{...}}| avec \verb|ligne1={e1,e2,...}|.
+\end{warningblock}
+
+\subsection{Matrice d'adjacence, puissance}
+
+\begin{cautionblock}
+La commande dédiée à la l'affichage d'une matrice d'adjacence \motcletex!\MatriceAdjacence!.
+
+\smallskip
+
+La commande dédiée à la l'affichage d'une puissance d'une matrice d'adjacence \motcletex!\PuissanceMatrice!.
+\end{cautionblock}
+
+\begin{DemoCode}[listing only]
+%affichage de la matrice d'adjdacence
+\MatriceAdjacence[clés]{matrice}
+
+%affichage de la puissance
+\PuissanceMatrice[clés]{matrice}{exposant}
+\end{DemoCode}
+
+\begin{tipblock}
+Les \Cle{clés} (communes) disponibles sont :
+
+\begin{itemize}
+	\item \Cle{Bordure} := booléen pour border la matrice ; \hfill{}défaut : \Cle{false}
+	\item \Cle{Sommets} := sommets du graphe (uni-caractères) ; \hfill{}défaut : \Cle{ABCDE...}
+	\item \Cle{Num} := booléen pour formater avec \packagetex!siunitx! (si chargé !) ; \hfill{}défaut : \Cle{false}
+	\item \Cle{PoliceBordure} := spécifier la police (taille) de la bordure.\hfill{}défaut : \Cle{\textbackslash footnotesize}
+\end{itemize}
+
+Le deuxième argument, optionnel et entre \texttt{<...>} permet de spécifier la matrice (comme indiqué précédemment) avec laquelle on travaille.
+\end{tipblock}
+
+\begin{DemoCode}[]
+\def\MatriceAdj{{{0,1,1,1},{0,0,1,0},{0,1,0,1},{1,0,0,1}}}
+On considère la matrice d'adjacence $M = \MatriceAdjacence{\MatriceAdj}$.\par
+On considère la matrice d'adjacence $M = \MatriceAdjacence[Bordure]{\MatriceAdj}$.\par
+On considère la matrice d'adjacence $M = \MatriceAdjacence[Bordure,Sommets=JKLM]{\MatriceAdj}$.\par
+\end{DemoCode}
+
+\subsection{Chemins de longueur donnée}
+
+\begin{cautionblock}
+La commande dédiée au calcul du nombre de chemins de longueur donnée dans un graphe est \motcletex!\NbCheminsLongueur!.
+
+\smallskip
+
+Pour le moment la commande ne calcule \textit{que} le nombre de chemins de longueur donnée entre deux sommets.
+\end{cautionblock}
+
+\begin{DemoCode}[listing only]
+%calcul du nombre de chemins
+\NbCheminsLongueur[Longueur=...,De=...,Vers=...,clés]{matrice}
+\end{DemoCode}
+
+\begin{tipblock}
+Les \Cle{clés} disponibles sont :
+
+\begin{itemize}
+	\item \Cle{Sommets} := sommets du graphe (uni-caractères) ; \hfill{}défaut : \Cle{ABCDE...}
+	\item \Cle{Num} := booléen pour formater avec \packagetex!siunitx! (si chargé !).\hfill{}défaut : \Cle{false}
+\end{itemize}
+
+Les clés \Cle{De}, \Cle{Vers} et \Cle{Longueur} sont \textit{nécessaires} et doivent être cohérentes avec la liste des sommets.
+\end{tipblock}
+
+\begin{DemoCode}[]
+\def\MatriceAdjB{{{1,1,0,0,0},{1,0,1,0,0},{1,0,0,1,0},{1,1,0,0,0},{0,0,0,1,0}}}
+On donne $M = \MatriceAdjacence[Bordure,Sommets=JKLMN]{\MatriceAdjB}$.\par
+On a $M^5 = \PuissanceMatrice[Bordure,Sommets=JKLMN]{\MatriceAdjB}{5}$, il existe \NbCheminsLongueur[Longueur=5,De=J,Vers=L,Sommets=JKLMN]{\MatriceAdjB} chemins de longueur 5 allant de $J$ vers $L$.
+\end{DemoCode}
+
+\subsection{Matrice de fermeture transitive}
+
+\begin{cautionblock}
+La commande dédiée pour travailler sur la matrice de fermeture transitive d'un graphe est \motcletex!\FermetureTransitive!.
+
+\smallskip
+
+Quelques options de \textit{présentation} sont disponibles pour cette commande.
+\end{cautionblock}
+
+\begin{DemoCode}[listing only]
+%matrice de fermeture transitive
+\FermetureTransitive[clés]{matrice}
+\end{DemoCode}
+
+\begin{tipblock}
+Les \Cle{clés} disponibles sont :
+
+\begin{itemize}
+	\item \Cle{Sommets} := sommets du graphe (uni-caractères) ; \hfill{}défaut : \Cle{ABCDE...}
+	\item \Cle{Formule} := booléen pour afficher la formule ; \hfill{}défaut : \Cle{false}
+	\item \Cle{Brut} := booléen pour afficher le résultat brut de la calculatrice ; \hfill{}défaut : \Cle{false}
+	\item \Cle{Enonce} := booléen pour afficher le nom au début ; \hfill{}défaut : \Cle{false}
+	\item \Cle{NomMatrice} := nom de la matrice d'adjacence ; \hfill{}défaut : \Cle{M}
+	\item \Cle{Bordure} := booléen pour border la matrice ; \hfill{}défaut : \Cle{false}
+	\item \Cle{Sommets} := sommets du graphe (uni-caractères) ; \hfill{}défaut : \Cle{ABCDE...}
+	\item \Cle{PoliceBordure} := spécifier la police (taille) de la bordure.\hfill{}défaut : \Cle{\textbackslash footnotesize}
+\end{itemize}
+
+À noter qu'une clé booléenne, \Cle{Complet}, existe, et qui active \Cle{Formule} et \Cle{Enonce}.
+\end{tipblock}
+
+\begin{DemoCode}[]
+\def\MatriceAdjC{{{1,1,1,1},{0,0,0,1},{0,1,0,0},{0,0,1,0}}}
+
+\FermetureTransitive{\MatriceAdjC} et \FermetureTransitive[Brut]{\MatriceAdjC}
+
+On a \FermetureTransitive[Brut,Formule]{\MatriceAdjC}.
+
+Donc \FermetureTransitive[Complet,Bordure,Sommets=XYZF]{\MatriceAdjC}.
 \end{DemoCode}
 
 \pagebreak
@@ -1424,7 +1687,7 @@ Le tableau est créé grâce au package \packagetex!nicematrix!.
 \begin{importantblock}
 Une \textbf{double compilation} peut être nécessaire pour le placement correct des filets !
 
-Les fonction \textsf{LUA} utilisées sont issues du \packagetex!luatruthtable!, elles sont légèrement modifiées pour \textit{coller} à une présentation plus classique.
+Les fonctions \textsf{LUA} utilisées sont issues du \packagetex!luatruthtable!, elles sont légèrement modifiées pour \textit{coller} à une présentation plus classique.
 \end{importantblock}
 
 \begin{DemoCode}[listing only]
