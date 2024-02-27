@@ -5,8 +5,8 @@
 
 \documentclass[french,a4paper,11pt]{article}
 \usepackage[margin=2cm,includefoot]{geometry}
-\def\TPversion{0.1.9}
-\def\TPdate{13 décembre 2023}
+\def\TPversion{0.2.1}
+\def\TPdate{26 février 2024}
 %\usepackage[utf8]{inputenc}
 %\usepackage[T1]{fontenc}
 \usepackage{amsmath,amssymb}
@@ -81,10 +81,10 @@
 		keywordstyle={\color{violet}},%
 		classoffset=2,%
 		alsoletter={-},%
-		morekeywords={\MPMPlaceTache,\MPMPlaceNotice,\MPMPlaceDuree,GrapheMPM,TableKarnaugh,\KarnaughCasesResult,\KarnaughBlocRegroup,\MPMPlaceTaches,\MPMPlaceDurees,GrapheTikz,\GrphPlaceSommets,\GrphTraceAretes,\tikzset,\DiagrammeSagittal,\draw,\DiagrammeSagittalCompo,\TableVerite,\SimplificationKarnaugh,\SimplificationBooleenne,\KarnaughCasesAuto,\MatriceAdjacence,\PuissanceMatrice,\NbCheminsLongueur,\FermetureTransitive},%
+		morekeywords={\MPMPlaceTache,\MPMPlaceNotice,\MPMPlaceDuree,GrapheMPM,TableKarnaugh,\KarnaughCasesResult,\KarnaughBlocRegroup,\MPMPlaceTaches,\MPMPlaceDurees,GrapheTikz,\GrphPlaceSommets,\GrphTraceAretes,\tikzset,\DiagrammeSagittal,\draw,\DiagrammeSagittalCompo,\TableVerite,\SimplificationKarnaugh,\SimplificationBooleenne,\KarnaughCasesAuto,\MatriceAdjacence,\PuissanceMatrice,\NbCheminsLongueur,\FermetureTransitive,\ResolSystemeMatrices,\PresentProdMat,\OpeBinDecHex},%
 		keywordstyle={\color{green!50!black}},%
 		classoffset=3,%
-		morekeywords={CouleurDurees,CouleurFleches,LargeurCases,Epaisseur,Police,CouleurDates,CouleurBords,NoirBlanc,Grille,DecalHorizDeb,DecalVertDeb,DecalHorizFin,DecalVertFin,Coude,SensCoude,Unite,Variables,Swap,Aide,CouleurCases,Decalage,Couleur,Type,Legende,PosVarLaterale,CouleurLegende,CouleurSommets,TypeSommets,Unite,CouleurFT,DimensionSommets,PositionFleches,EchelleFleches,TypeFleche,Droit,Milieu,AngleGauche,AngleDroite,Boucle,GrphStyleArc,GrphStyleSommet,Poids,GrphStylepoids,DistElem,DistEns,LargEns,NomAppli,CouleurE,CouleurAppli,CouleurF,CouleursFleches,TypeFleche,Epaisseur,Labels,Ensembles,PosLabels,PoliceLabels,Offset,NomApplis,CouleursAppli,VF,LargeursColonnes,CouleurEnonce,CodeAvant,CodeApres,StyleAlternatif,PoliceTT,Espace,Couleurs,Contraire,Enonce,Bordure,Sommets,Num,PoliceBordure,De,Vers,Formule,Brut,NomMatrice,Longueur,Complet},%
+		morekeywords={CouleurDurees,CouleurFleches,LargeurCases,Epaisseur,Police,CouleurDates,CouleurBords,NoirBlanc,Grille,DecalHorizDeb,DecalVertDeb,DecalHorizFin,DecalVertFin,Coude,SensCoude,Unite,Variables,Swap,Aide,CouleurCases,Decalage,Couleur,Type,Legende,PosVarLaterale,CouleurLegende,CouleurSommets,TypeSommets,Unite,CouleurFT,DimensionSommets,PositionFleches,EchelleFleches,TypeFleche,Droit,Milieu,AngleGauche,AngleDroite,Boucle,GrphStyleArc,GrphStyleSommet,Poids,GrphStylepoids,DistElem,DistEns,LargEns,NomAppli,CouleurE,CouleurAppli,CouleurF,CouleursFleches,TypeFleche,Epaisseur,Labels,Ensembles,PosLabels,PoliceLabels,Offset,NomApplis,CouleursAppli,VF,LargeursColonnes,CouleurEnonce,CodeAvant,CodeApres,StyleAlternatif,PoliceTT,Espace,Couleurs,Contraire,Enonce,Bordure,Sommets,Num,PoliceBordure,De,Vers,Formule,Brut,NomMatrice,Longueur,Complet,NomsMatrices,NomInverse,NomSysteme,Inconnues,OptionNiceMatrix,Base,AffRetenues,AffEgal,SymbDecal,LimiteCapac,CouleurRetenue,Interm},%
 		keywordstyle={\color{orange}}
 	},%
 	#1
@@ -255,9 +255,15 @@
 
 \section{Historique}
 
+\verb|v0.2.1|~:~~~~Opérations posées (en binaire, hexadécimal et décimal)
+
+\verb|v0.2.0|~:~~~~Systèmes 3x3 par matrices + \textit{présentation} d'un produit matriciel
+
 \verb|v0.1.9|~:~~~~Travail sur les matrices d'adjacence (chemins, puissances, fermeture)
 
-\verb|v0.1.8|~:~~~~Possibilité de créer le tableau de Karnaugh via une expression booléenne  + Corrections mineures
+\verb|v0.1.8|~:~~~~Possibilité de créer le tableau de Karnaugh via une expression booléenne
+
+\verb|      |~:~~~~Corrections mineures
 
 \verb|v0.1.7|~:~~~~Possibilité de simplifier une expression booléenne \textit{directement} + amélioration des espaces
 
@@ -287,16 +293,18 @@
 Le package \packagetex!ProfSio! propose quelques commandes pour travailler sur des points particuliers de Mathématiques enseignées en BTS SIO :
 
 \begin{itemize}
+	\item opérations posées en base 2/10/16 ;
 	\item graphes d'ordonnancement par la méthode MPM ;
 	\item expressions booléennes et tableaux de Karnaugh pour 3 variables ;
 	\item graphes \textit{simples} orientés ou pondérés, des diagrammes sagittaux ;
-	\item tables de vérité (via \hologo{LuaLaTeX}).
+	\item tables de vérité (via \hologo{LuaLaTeX}) ;
+	\item etc
 \end{itemize}
 \vspace*{-\baselineskip}\leavevmode
 \end{noteblock}
 
 \begin{warningblock}
-Le code ne propose par de \og résolution \fg{} du graphe MPM ou de représentation \og automatique \fg{} d'un graphe, il ne consiste \textit{qu'en} une mise en forme du graphe MPM, du tableau de Karnaugh ou du graphe.
+Le code ne propose pas de \og résolution \fg{} du graphe MPM ou de représentation \og automatique \fg{} d'un graphe, il ne consiste \textit{qu'en} une mise en forme du graphe MPM, du tableau de Karnaugh ou du graphe.
 
 \smallskip
 
@@ -321,8 +329,8 @@ Il n'existe pas d'option pour le package, et \packagetex!xcolor! n'est pas charg
 \packagetex!ProfSio! charge les packages suivantes :
 
 \begin{itemize}
-	\item \packagetex!tikz!, \packagetex!pgffor!, \packagetex!xintexpr!, \packagetex!tabularray!, \packagetex!simplekv!, \packagetex!xstring! et \packagetex!listofitems! ;
-	\item \packagetex!luacode! et \packagetex!nicematrix! (uniquement si le compilateur détecté est \hologo{LuaLaTeX}) ;
+	\item \packagetex!tikz!, \packagetex!pgffor!, \packagetex!xintexpr!, \packagetex!tabularray!, \packagetex!simplekv!, \packagetex!xstring!, \packagetex!calc! et \packagetex!listofitems! ;
+	\item \packagetex!nicematrix!, \packagetex!siunitx! et \packagetex!luacode! (uniquement si le compilateur détecté est \hologo{LuaLaTeX}) ;
 	\item les librairies \packagetex!tikz! :
 	\begin{itemize}
 		\item \motcletex!tikz.positioning!, \motcletex!tikz.babel!, \motcletex!tikz.calc! ;
@@ -337,9 +345,7 @@ Il est compatible avec les compilations usuelles en \textsf{latex}, \textsf{pdfl
 \subsection{Fonctionnement global}
 
 \begin{tipblock}
-Les environnements sont créés avec \TikZ, et la majorité des paramètres des tracés sont personnalisables :
-
-\hfill{}couleurs ; dimensions ; polices.\hfill~
+Les environnements sont créés avec \TikZ, et la majorité des paramètres des tracés sont personnalisables : \texttt{couleurs} ; \texttt{dimensions} ; \texttt{polices}.
 \end{tipblock}
 
 \begin{noteblock}
@@ -352,6 +358,125 @@ Le choix a été fait de :
 \end{itemize}
 \vspace*{-\baselineskip}\leavevmode
 \end{noteblock}
+
+\pagebreak
+
+\section{Opérations posées}
+
+\subsection{Idée}
+
+\begin{tipblock}
+L'idée est de proposer une commande poser une opération :
+
+\begin{itemize}
+	\item addition/soustraction/multiplication ;
+	\item avec retenues pour l'addition et la soustraction.
+\end{itemize}
+\vspace*{-\baselineskip}\leavevmode
+\end{tipblock}
+
+\begin{DemoCode}[listing only]
+%opération posée
+\OpeBinDecHex[clés]{opération}
+\end{DemoCode}
+
+\begin{DemoCode}[]
+%Addition
+\OpeBinDecHex{9999+851}
+\end{DemoCode}
+
+\begin{DemoCode}[]
+%Soustraction binaire
+\OpeBinDecHex[Base=bin]{10010-1101}
+\end{DemoCode}
+
+\begin{DemoCode}[]
+%Multiplication hexa
+\OpeBinDecHex[Base=hex]{ACDC*AF4}
+\end{DemoCode}
+
+\subsection{Clés et options}
+
+\begin{cautionblock}
+En ce qui concerne la commande, les \Cle{clés}, disponibles entre \Cle{[...]}, sont :
+
+\begin{itemize}
+	\item \Cle{Base} pour spécifier la base (\Cle{dec} par défaut) ;
+	\item \Cle{LimiteCapac} pour fixer une limite de chiffres (\Cle{0} pour aucune limite par défaut) ;
+	\item \Cle{SymbDecal} pour le symbole du décalages des multiplications (\Cle{.} par défaut) ;
+	\item \Cle{Offset} pour l'espacement horizontal entre les chiffres (\Cle{6pt} par défaut) ;
+	\item \Cle{CouleurRetenue} pour la couleur des retenues dans les additions (\Cle{red} par défaut) ;
+	\item \Cle{Interm} := booléen pour afficher les étapes intermédiaires des multiplications (\Cle{true} par défaut) ;
+	\item \Cle{AffRetenues} := booléen pour afficher les retenues des additions/soustractions (\Cle{true} par défaut) ;
+	\item \Cle{AffEgal} := booléen pour afficher le signe \texttt{=} du résultat (\Cle{true} par défaut).
+\end{itemize}
+\end{cautionblock}
+
+\subsection{Exemples}
+
+\begin{DemoCode}[]
+%Addition décimale
+\OpeBinDecHex{8475+6520}
+\end{DemoCode}
+
+\begin{DemoCode}[]
+%Addition binaire
+\OpeBinDecHex[Base=bin]{1111+111}
+
+%Addition binaire, sans retenue(s)
+\OpeBinDecHex[Base=bin,AffRetenues=false]{1111+111}
+\end{DemoCode}
+
+\begin{DemoCode}[]
+%Addition hexa
+\OpeBinDecHex[Base=hex]{ABC+DE}
+\end{DemoCode}
+
+\begin{DemoCode}[]
+%Addition hexa, personnalisée
+{\Huge\ttfamily
+\OpeBinDecHex[Base=hex,AffEgal=false,Offset=0pt]{ABCD+FE}}
+\end{DemoCode}
+
+\begin{DemoCode}[]
+%Addition binaire, limité à 4 bits
+\OpeBinDecHex[Base=bin,LimiteCapac=4,Offset=2pt]{1111+111}
+\end{DemoCode}
+
+\begin{DemoCode}[]
+%Soustraction binaire
+\OpeBinDecHex[Base=bin]{10000-111}
+\end{DemoCode}
+
+\begin{DemoCode}[]
+%Multiplication binaire
+\OpeBinDecHex[Base=bin,LimiteCapac=6]{110011*101}
+\end{DemoCode}
+
+\begin{DemoCode}[]
+%Mutiplication hexa, symbole de décalage '0'
+\textsf{\OpeBinDecHex[Base=hex,SymbDecal=0]{ABCD*FE}}
+\end{DemoCode}
+
+\begin{DemoCode}[]
+%Mutiplication hexa
+\texttt{\OpeBinDecHex[Base=hex]{ABCD*FAFA}}
+\end{DemoCode}
+
+\begin{DemoCode}[]
+%Mutiplication hexa, limité à 4 'chiffres'
+\texttt{\OpeBinDecHex[Base=hex,LimiteCapac=4]{ABCD*FAFA}}
+\end{DemoCode}
+
+\begin{DemoCode}[]
+%Mutiplication hexa, sans lignes intermédiaires
+\textsf{\OpeBinDecHex[Base=hex,Interm=false]{ABCD*FE}}
+\end{DemoCode}
+
+\begin{DemoCode}[]
+%Soustraction hexa, sans signe '=', sans espacement horizontal
+{\Huge\ttfamily\OpeBinDecHex[Base=hex,AffEgal=false]{ABCD-FE}}
+\end{DemoCode}
 
 \pagebreak
 
@@ -1847,6 +1972,137 @@ Le tableau suivant présente les connecteurs logiques issues du package \package
 	{lognot*P,lognot*Q,P*logand*Q,
 		lognot*(P*logand*Q),(lognot*P)*logor*(lognot*Q)}%
 	{$\lnot P$,$\lnot Q$,$P\land Q$,$\lnot(P\land Q)$,$(\lnot P)\lor(\lnot Q)$}
+\end{DemoCode}
+
+\pagebreak
+
+\section{Système 3x3 par matrices}
+
+\subsection{Commande et fonctionnement global}
+
+\begin{cautionblock}
+La commande dédiée au travail sur les systèmes 3×3 est \motcletex!\ResolSystemeMatrices!.
+
+Cette commande (adapté à une résolution matricielle du système) peut :
+
+\begin{itemize}
+	\item résoudre et rédiger le système, par matrices ;
+	\item ne déterminer que les matrices et solutions pour réutilisation \textit{personnelle}.
+\end{itemize}
+\vspace*{-\baselineskip}\leavevmode
+\end{cautionblock}
+
+\begin{DemoCode}[listing only]
+\ResolSystemeMatrices[clés]<option conversion>{systeme}[systeme formaté][inconnues]
+\end{DemoCode}
+
+\begin{DemoCode}[]
+\ResolSystemeMatrices{2x+3y+4z=2,2y+3z=3,x+2y+3z=5}
+\end{DemoCode}
+
+\subsection{Arguments et clés pour la commande}
+
+\begin{DemoCode}[listing only]
+\ResolSystemeMatrices[clés]<option conversion>{systeme}[systeme formaté][inconnues]
+\end{DemoCode}
+
+\begin{tipblock}
+En ce qui concerne la résolution \textit{détaillée}, les \Cle{clés} optionnelles sont :
+
+\begin{itemize}
+	\item \Cle{NomsMatrices} := noms des 3 matrices ; \hfill~défaut : \Cle{A,X,B}
+	\item \Cle{NomInverse} := nom de l'inverse ; \hfill~défaut : \Cle{A\{-1\}}
+	\item \Cle{NomSysteme} := nom du système ; \hfill~défaut : \Cle{\{\}}
+	\item \Cle{Inconnues} := inconnues du système; \hfill~défaut : \Cle{xyz}
+	\item \Cle{OptionNiceMatrix} := offset pour les matrices avec \motcletex!nicetabular!.\hfill~défaut : \Cle{1pt}
+\end{itemize}
+
+Le deuxième argument, optionnel et entre \texttt{<...>} propose une option (globale) de formatage pour les fractions (les racines ne sont pas gérées\ldots), parmi \Cle{d/t/n/dec/dec=...}.
+
+\smallskip
+
+Le troisième argument, obligatoire et entre \texttt{\{...\}}, est quant à lui le système, en langage \motcletex!xint!.
+
+\smallskip
+
+Le quatrième argument, optionnel et entre \texttt{[...]}, est quant à lui le système, en langage \motcletex!tex! (si coefficients fractionnaires par exemple).
+
+\smallskip
+
+Le dernier argument, optionnel et entre \texttt{[...]}, est quant à lui la liste des inconnues à passer à \motcletex!systeme! pour formater le système si des commandes particulières sont présentes\ldots
+\end{tipblock}
+
+\begin{tipblock}
+Il existe également une clé booléenne, \Cle{Brut}, qui permet de ne faire \textit{que} les calculs et qui stocke :
+
+\begin{itemize}
+	\item la matrice du système dans la macro \motcletex!\ResolMatA! ;
+	\item la matrice des inconnues dans la macro \motcletex!\ResolMatX! ;
+	\item la matrice du second membre dans la macro \motcletex!\ResolMatB! ;
+	\item le déterminant le matrice du système dans la macro \motcletex!\ResolDet! ;
+	\item l'éventuelle inverse de la matrice du système dans la macro \motcletex!\ResolInvMatA! ;
+	\item les éventuelles solutions dans \motcletex!\ResolSolX!, \motcletex!\ResolSolY! et \motcletex!\ResolSolZ!.
+\end{itemize}
+\vspace*{-\baselineskip}\leavevmode
+\end{tipblock}
+
+\subsection{Exemples}
+
+\begin{DemoCode}[]
+\ResolSystemeMatrices[Brut]{2x+3y+4z=2,2y+3z=3,x+2y+3z=5}
+
+$A=\ResolMatA$ et $X=\ResolMatX$ et $B=\ResolMatB$ et $A^{-1}=\ResolInvMatA$.
+
+$\text{dét}(A)=\ResolDet$ ; $x=\ResolSolX$ ; $y=\ResolSolY$ et $z=\ResolSolZ$.
+\end{DemoCode}
+
+\begin{DemoCode}[]
+\ResolSystemeMatrices%
+	[Inconnues=abc,NomSysteme={\mathcal{S}},NomsMatrices={A,X,Y},NomInverse=C]%
+	{510b+1200c=1197600,a+2b+5c=2146820,b+2c=2200}%
+	[510b+\num{1200}c=\num{1197600},a+2b+5c=\num{2146820},b+2c=\num{2200}]%
+	[abc]
+\end{DemoCode}
+
+\begin{DemoCode}[]
+\ResolSystemeMatrices<t>%formatage des fractions en tfrac
+	{2x+y-0.5z=10,x+1/3*y+z=0,y-4z=5}%
+	[2x+y-\num{0.5}z=10,x+\frac13y+z=0,y-4z=5]%
+	[xyz]
+\end{DemoCode}
+
+\pagebreak
+
+\section{Présentation d'un produit matriciel (sans calculs)}
+
+\begin{tipblock}
+L'idée est de proposer une commande pour présenter (de manière \textit{triangulaire}) un produit matriciel.
+
+\smallskip
+
+La commande est basique et ne permet pas (encore ?) d'effectuer le produit matriciel.
+
+\smallskip
+
+Les matrices sont à donner en langage \motcletex!pmatrix! ou \motcletex!nicematrix!.
+\end{tipblock}
+
+\begin{DemoCode}[listing only]
+%la version étoilée utilise nicematrix
+\PresentProdMat(*)<options tikzpicture>{MatA}{MatB}{MatAB}<option nicematrix>
+\end{DemoCode}
+
+\begin{DemoCode}[]
+\PresentProdMat{3&-1\\-2&2}{12\\14}{22\\4}
+\end{DemoCode}
+
+\begin{DemoCode}[]
+On a, par produit matriciel le calcul 
+\PresentProdMat*<baseline>
+	{1&1&1\\1&1&1\\1&1&1}
+	{1&1&1\\1&1&1\\1&1&1}
+	{3&3&3\\3&3&3\\3&3&3}
+	<cell-space-limits=3pt>
 \end{DemoCode}
 
 \end{document}

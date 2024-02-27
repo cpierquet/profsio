@@ -3,7 +3,9 @@
 %            : Luatruthtable from Chetan Shirore and Dr. Ajit Kumar https://ctan.org/pkg/luatruthtable
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{ProfSio}[2023/12/13 0.1.9 Pour les enseignants de Maths en BTS SIO]
+\ProvidesPackage{ProfSio}[2023/02/26 0.2.1 Pour les enseignants de Maths en BTS SIO]
+%0.2.1	Opérations posées (+,-,×) avec bin/hex/dec
+%0.2.0	Travail sur les systèmes 3x3 par matrices et la présentation d'un produit matriciel
 %0.1.9	Travail sur les chemins de longueur donnée + fermeture transitive
 %0.1.8	Possibilité de représenter une table de Karnaugh via son expression + corrections mineures
 %0.1.7	Ajout des simplifications booléennes d'expressions classiques
@@ -23,6 +25,12 @@
 \RequirePackage{xstring}
 \RequirePackage{listofitems}
 \RequirePackage{xintexpr}
+\RequirePackage{xintbinhex}
+\RequirePackage{systeme}
+\RequirePackage{ifthen}
+\RequirePackage{siunitx}
+\RequirePackage{calc}
+\RequirePackage{nicematrix}
 %------Librairies
 \usetikzlibrary{positioning,decorations.pathreplacing,decorations.markings,arrows,arrows.meta,calc,babel,shapes,shapes.geometric}
 %------Divers
@@ -991,7 +999,6 @@
 \ifluatex
 \RequirePackage{xkeyval}
 \RequirePackage{luacode}
-\RequirePackage{nicematrix}
 
 %patchs pour luatruthtable (échange 1ère ligne <-> dernière ligne), à voir si le package sera patché pour éviter de "piquer" le code !
 %patchs from luatruthtable
@@ -1978,5 +1985,505 @@ end
 		}%
 }
 \fi
+
+%===MATRICES ET SYSTÈMES 3x3
+%%------SimplFrac nouvelle version
+\NewDocumentCommand\IntConvFrac{ s O{} m }{%
+	%*=moins sur le numérateur
+	%2=argument optionnel[d/t/dec=...]
+	%3=argument mandataire {calcul ou fraction}
+	\def\calculargument{\xintPRaw{\xintIrr{\xinteval{#3}}}}%on calcule et on transforme en A/B
+	\IfSubStr{\calculargument}{/}%on teste si le symbole / apparaît
+	{%si oui := fraction
+		\StrBefore{\calculargument}{/}[\numerateur]%on extrait le numérateur
+		\StrBehind{\calculargument}{/}[\denominateur]%on extrait le dénominateur
+		\ifblank{#2}%
+		{%
+			\IfBooleanTF{#1}%
+			{\ensuremath{\frac{\num{\numerateur}}{\num{\denominateur}}}}%
+			{%
+				\ifthenelse{\numerateur < 0}%
+				{\ensuremath{-\frac{\num{\fpeval{abs(\numerateur)}}}{\num{\denominateur}}}}%
+				{\ensuremath{\frac{\num{\numerateur}}{\num{\denominateur}}}}%
+			}%
+		}%
+		{}%si l'argument optionnel est vide
+		\IfStrEq{#2}{d}%
+		{%
+			\IfBooleanTF{#1}%
+			{\ensuremath{\dfrac{\num{\numerateur}}{\num{\denominateur}}}}%
+			{%
+				\ifthenelse{\numerateur < 0}%
+				{\ensuremath{-\dfrac{\num{\fpeval{abs(\numerateur)}}}{\num{\denominateur}}}}%
+				{\ensuremath{\dfrac{\num{\numerateur}}{\num{\denominateur}}}}%
+			}%
+		}%
+		{}%si l'argument optionnel est vide
+		\IfStrEq{#2}{t}%
+		{%
+			\IfBooleanTF{#1}%
+			{\ensuremath{\tfrac{\num{\numerateur}}{\num{\denominateur}}}}%
+			{%
+				\ifthenelse{\numerateur < 0}%
+				{\ensuremath{-\tfrac{\num{\fpeval{abs(\numerateur)}}}{\num{\denominateur}}}}%
+				{\ensuremath{\tfrac{\num{\numerateur}}{\num{\denominateur}}}}%
+			}%
+		}%
+		{}%si l'argument optionnel est vide
+		\IfStrEq{#2}{n}%
+		{%
+			\ensuremath{\nicefrac{\num{\numerateur}}{\num{\denominateur}}}
+		}%
+		{}%si l'argument optionnel est vide
+		\IfSubStr{#2}{dec}%on veut la forme décimale
+		{%
+			\IfSubStr{#2}{=}%si on rajoute une précision
+			{%
+				\StrBehind{#2}{=}[\precdecimal]%
+				\ensuremath{\num{\xintfloateval{round(#3,\precdecimal)}}}%
+			}%
+			{%
+				\ensuremath{\num{\xintfloateval{#3}}}%
+			}%
+		}%
+		{}%si l'argument optionnel est vide
+	}{%si non := entier
+		\num{\calculargument}%on affiche l'entier, avec le package siunitx
+	}%
+}
+
+%type=3x3
+\defKV[resolsysmatrix]{%
+	NomsMatrices=\def\ResolSysMatNames{#1},%
+	Inconnues=\edef\ResolSysMatUnkn{#1},%
+	NomInverse=\def\ResolSysMatInv{#1},%
+	NomSysteme=\def\ResolSysMatNameSys{#1},%
+	OptionNiceMatrix=\def\ResolSysMatOpt{#1}
+}
+\setKVdefault[resolsysmatrix]{%
+	NomsMatrices={A,X,B},%
+	NomInverse={A^{-1}},%
+	NomSysteme={},%
+	Inconnues=xyz,%
+	Brut=false,%
+	OptionNiceMatrix={1pt}
+}
+
+\NewDocumentCommand\ResolSystemeMatrices{ O{} D<>{} m O{#3} O{xyz} }{%
+	%1=clés
+	%2=option formatage conversion
+	%3=système {eq1,eq2,eq3} en langage xint
+	%4=sytème pour la macro \systeme
+	%5=inconnues pour \systeme
+	\useKVdefault[resolsysmatrix]%
+	\setKV[resolsysmatrix]{#1}%
+	%lectures des inconnues
+	\StrChar{\ResolSysMatUnkn}{1}[\tmpinconnuex]%
+	\StrChar{\ResolSysMatUnkn}{2}[\tmpinconnuey]%
+	\StrChar{\ResolSysMatUnkn}{3}[\tmpinconnuez]%
+	%lectures des noms de matrices
+	\readlist*\TmpLstUnkb{\ResolSysMatNames}%
+	\itemtomacro\TmpLstUnkb[1]{\tmpnamematA}%
+	\itemtomacro\TmpLstUnkb[2]{\tmpnamematX}%
+	\itemtomacro\TmpLstUnkb[3]{\tmpnamematB}%
+	%lecture des équations
+	\readlist*\TmpLstEq{#3}%
+	\itemtomacro\TmpLstEq[1]\TmpEqA%
+	\itemtomacro\TmpLstEq[2]\TmpEqB%
+	\itemtomacro\TmpLstEq[3]\TmpEqC%
+	%extraction des coefficients
+	\StrCut{\TmpEqA}{=}{\tmpeqa}{\MatBA}%
+	\StrCut{\TmpEqB}{=}{\tmpeqb}{\MatBB}%
+	\StrCut{\TmpEqC}{=}{\tmpeqc}{\MatBC}%
+	%MatA (1,1)
+	\StrSubstitute{\tmpeqa}{\tmpinconnuex}{(1)}[\MatA]%
+	\StrSubstitute{\MatA}{\tmpinconnuey}{(0)}[\MatA]%
+	\StrSubstitute{\MatA}{\tmpinconnuez}{(0)}[\MatA]%
+	%MatB (1,2)
+	\StrSubstitute{\tmpeqa}{\tmpinconnuey}{(1)}[\MatB]%
+	\StrSubstitute{\MatB}{\tmpinconnuex}{(0)}[\MatB]%
+	\StrSubstitute{\MatB}{\tmpinconnuez}{(0)}[\MatB]%
+	%MatC (1,3)
+	\StrSubstitute{\tmpeqa}{\tmpinconnuez}{(1)}[\MatC]%
+	\StrSubstitute{\MatC}{\tmpinconnuex}{(0)}[\MatC]%
+	\StrSubstitute{\MatC}{\tmpinconnuey}{(0)}[\MatC]%
+	%MatD (2,1)
+	\StrSubstitute{\tmpeqb}{\tmpinconnuex}{(1)}[\MatD]%
+	\StrSubstitute{\MatD}{\tmpinconnuey}{(0)}[\MatD]%
+	\StrSubstitute{\MatD}{\tmpinconnuez}{(0)}[\MatD]%
+	%MatE (2,2)
+	\StrSubstitute{\tmpeqb}{\tmpinconnuey}{(1)}[\MatE]%
+	\StrSubstitute{\MatE}{\tmpinconnuex}{(0)}[\MatE]%
+	\StrSubstitute{\MatE}{\tmpinconnuez}{(0)}[\MatE]%
+	%MatF (2,3)
+	\StrSubstitute{\tmpeqb}{\tmpinconnuez}{(1)}[\MatF]%
+	\StrSubstitute{\MatF}{\tmpinconnuex}{(0)}[\MatF]%
+	\StrSubstitute{\MatF}{\tmpinconnuey}{(0)}[\MatF]%
+	%MatG (3,1)
+	\StrSubstitute{\tmpeqc}{\tmpinconnuex}{(1)}[\MatG]%
+	\StrSubstitute{\MatG}{\tmpinconnuey}{(0)}[\MatG]%
+	\StrSubstitute{\MatG}{\tmpinconnuez}{(0)}[\MatG]%
+	%MatH (3,2)
+	\StrSubstitute{\tmpeqc}{\tmpinconnuey}{(1)}[\MatH]%
+	\StrSubstitute{\MatH}{\tmpinconnuex}{(0)}[\MatH]%
+	\StrSubstitute{\MatH}{\tmpinconnuez}{(0)}[\MatH]%
+	%MatI (3,3)
+	\StrSubstitute{\tmpeqc}{\tmpinconnuez}{(1)}[\MatI]%
+	\StrSubstitute{\MatI}{\tmpinconnuex}{(0)}[\MatI]%
+	\StrSubstitute{\MatI}{\tmpinconnuey}{(0)}[\MatI]%
+	%déterminant
+	\def\DETMATRICE{\xinteval{(\MatA)*(\MatE)*(\MatI)+(\MatD)*(\MatH)*(\MatC)+(\MatB)*(\MatF)*(\MatG)-(\MatG)*(\MatE)*(\MatC)-(\MatD)*(\MatB)*(\MatI)-(\MatA)*(\MatH)*(\MatF)}}%
+	%inverse, à voir après pour le cas non inversible...
+	\xintifboolexpr{\DETMATRICE == 0}%
+		{}%
+		{%
+			\def\MatInvA{((\MatE)*(\MatI)-(\MatH)*(\MatF))/(\DETMATRICE)}%
+			\def\MatInvB{(-(\MatB)*(\MatI)+(\MatC)*(\MatH))/(\DETMATRICE)}%
+			\def\MatInvC{((\MatB)*(\MatF)-(\MatC)*(\MatE))/(\DETMATRICE)}%
+			\def\MatInvD{(-(\MatD)*(\MatI)+(\MatF)*(\MatG))/(\DETMATRICE)}%
+			\def\MatInvE{((\MatA)*(\MatI)-(\MatC)*(\MatG))/(\DETMATRICE)}%
+			\def\MatInvF{(-(\MatA)*(\MatF)+(\MatD)*(\MatC))/(\DETMATRICE)}%
+			\def\MatInvG{((\MatD)*(\MatH)-(\MatE)*(\MatG))/(\DETMATRICE)}%
+			\def\MatInvH{(-(\MatA)*(\MatH)+(\MatB)*(\MatG))/(\DETMATRICE)}%
+			\def\MatInvI{((\MatA)*(\MatE)-(\MatB)*(\MatD))/(\DETMATRICE)}%
+			%résultat
+			\def\MatResA{\IntConvFrac[#2]{(\MatInvA)*(\MatBA)+(\MatInvB)*(\MatBB)+(\MatInvC)*(\MatBC)}}%
+			\def\MatResB{\IntConvFrac[#2]{(\MatInvD)*(\MatBA)+(\MatInvE)*(\MatBB)+(\MatInvF)*(\MatBC)}}%
+			\def\MatResC{\IntConvFrac[#2]{(\MatInvG)*(\MatBA)+(\MatInvH)*(\MatBB)+(\MatInvI)*(\MatBC)}}%
+			\def\MatAffInvA{\IntConvFrac[#2]{\MatInvA}}%
+			\def\MatAffInvB{\IntConvFrac[#2]{\MatInvB}}%
+			\def\MatAffInvC{\IntConvFrac[#2]{\MatInvC}}%
+			\def\MatAffInvD{\IntConvFrac[#2]{\MatInvD}}%
+			\def\MatAffInvE{\IntConvFrac[#2]{\MatInvE}}%
+			\def\MatAffInvF{\IntConvFrac[#2]{\MatInvF}}%
+			\def\MatAffInvG{\IntConvFrac[#2]{\MatInvG}}%
+			\def\MatAffInvH{\IntConvFrac[#2]{\MatInvH}}%
+			\def\MatAffInvI{\IntConvFrac[#2]{\MatInvI}}%
+		}%
+	%affichage pour test
+	\def\MatAffA{\IntConvFrac[#2]{\MatA}}%
+	\def\MatAffB{\IntConvFrac[#2]{\MatB}}%
+	\def\MatAffC{\IntConvFrac[#2]{\MatC}}%
+	\def\MatAffD{\IntConvFrac[#2]{\MatD}}%
+	\def\MatAffE{\IntConvFrac[#2]{\MatE}}%
+	\def\MatAffF{\IntConvFrac[#2]{\MatF}}%
+	\def\MatAffG{\IntConvFrac[#2]{\MatG}}%
+	\def\MatAffH{\IntConvFrac[#2]{\MatH}}%
+	\def\MatAffI{\IntConvFrac[#2]{\MatI}}%
+	\def\MatAffBA{\IntConvFrac[#2]{\MatBA}}%
+	\def\MatAffBB{\IntConvFrac[#2]{\MatBB}}%
+	\def\MatAffBC{\IntConvFrac[#2]{\MatBC}}%
+	\ifboolKV[resolsysmatrix]{Brut}%
+		{%
+			\def\ResolDet{\IntConvFrac[#2]{(\MatA)*(\MatE)*(\MatI)+(\MatD)*(\MatH)*(\MatC)+(\MatB)*(\MatF)*(\MatG)-(\MatG)*(\MatE)*(\MatC)-(\MatD)*(\MatB)*(\MatI)-(\MatA)*(\MatH)*(\MatF)}}%
+			\def\ResolMatA{\begin{pNiceMatrix}[cell-space-limits=\ResolSysMatOpt] {\MatAffA}&{\MatAffB}&{\MatAffC} \\ {\MatAffD}&{\MatAffE}&{\MatAffF} \\ {\MatAffG}&{\MatAffH}&{\MatAffI} \end{pNiceMatrix}}%
+			\def\ResolMatX{\begin{pNiceMatrix}[cell-space-limits=\ResolSysMatOpt] \tmpinconnuex \\ \tmpinconnuey \\ \tmpinconnuez \end{pNiceMatrix}}%
+			\def\ResolMatB{\begin{pNiceMatrix}[cell-space-limits=\ResolSysMatOpt] {\MatAffBA} \\ {\MatAffBB} \\ {\MatAffBC} \end{pNiceMatrix}}%
+			\xintifboolexpr{\DETMATRICE == 0}%
+				{%
+					\def\ResolInvMatA{\text{La matrice n'est pas inversible.}}%
+				}%
+				{%
+					\def\ResolSolX{\IntConvFrac[#2]{(\MatInvA)*(\MatBA)+(\MatInvB)*(\MatBB)+(\MatInvC)*(\MatBC)}}%
+					\def\ResolSolY{\IntConvFrac[#2]{(\MatInvD)*(\MatBA)+(\MatInvE)*(\MatBB)+(\MatInvF)*(\MatBC)}}%
+					\def\ResolSolZ{\IntConvFrac[#2]{(\MatInvG)*(\MatBA)+(\MatInvH)*(\MatBB)+(\MatInvI)*(\MatBC)}}%
+					\def\ResolInvMatA{\begin{pNiceMatrix}[cell-space-limits=\ResolSysMatOpt] {\MatAffInvA}&{\MatAffInvB}&{\MatAffInvC} \\ {\MatAffInvD}&{\MatAffInvE}&{\MatAffInvF} \\ {\MatAffInvG}&{\MatAffInvH}&{\MatAffInvI} \end{pNiceMatrix}}%
+				}%
+		}%
+		{%
+			On considère le système $\IfEq{\ResolSysMatNameSys}{}{}{\ResolSysMatNameSys \text{ : }} \systeme[#5]{#4}$.\\
+			Matriciellement, le système s'écrit sous la forme $\tmpnamematA\times \tmpnamematX = \tmpnamematB$ avec :%
+			\[%
+			\tmpnamematA = \begin{pNiceMatrix}[cell-space-limits=\ResolSysMatOpt] {\MatAffA}&{\MatAffB}&{\MatAffC} \\ {\MatAffD}&{\MatAffE}&{\MatAffF} \\ {\MatAffG}&{\MatAffH}&{\MatAffI} \end{pNiceMatrix}
+			\text{ ; }
+			\tmpnamematX = \begin{pNiceMatrix}[cell-space-limits=\ResolSysMatOpt] \tmpinconnuex \\ \tmpinconnuey \\ \tmpinconnuez \end{pNiceMatrix}
+			\text{ et }
+			\tmpnamematB = \begin{pNiceMatrix}[cell-space-limits=\ResolSysMatOpt] {\MatAffBA} \\ {\MatAffBB} \\ {\MatAffBC} \end{pNiceMatrix}
+			\]%
+			\xintifboolexpr{\DETMATRICE == 0}%
+				{%
+					La matrice $\tmpnamematA$ n'est pas inversible, donc le système n'admet pas de solution (ou admet une unifinité de solutions).%
+				}%
+				{%
+					La matrice $\tmpnamematA$ est inversible, et :%
+					\[\tmpnamematA\times \tmpnamematX = \tmpnamematB \implies \underbrace{\ResolSysMatInv \times \tmpnamematA}_{{=}I_3} \times \tmpnamematX = \ResolSysMatInv \times \tmpnamematB \implies I_3 \times \tmpnamematX = \ResolSysMatInv\times \tmpnamematB \implies \tmpnamematX=\ResolSysMatInv\times \tmpnamematB.\]
+					%
+					La calculatrice nous donne $\tmpnamematX = \begin{pNiceMatrix}[cell-space-limits=\ResolSysMatOpt] {\MatResA} \\ {\MatResB} \\ {\MatResC} \end{pNiceMatrix}$. Ainsi on obtient $\tmpinconnuex=\MatResA$ et $\tmpinconnuey=\MatResB$ et $\tmpinconnuez=\MatResC$.%
+				}%
+		}%
+}
+
+%===PRESENTATION PRODUIT MATRICES
+\NewDocumentCommand\PresentProdMat{ s D<>{} m m m D<>{} }{%
+	\begin{tikzpicture}[inner sep=0pt,outer sep=0pt,#2]
+		\IfBooleanTF{#1}%
+			{%
+				\node (MatriceA) at (0,0) {{$\begin{pNiceMatrix}[#6] #3 \end{pNiceMatrix}$}} ;
+				\node[right=0pt of MatriceA,anchor=west] (MatriceAB) {{$\begin{pNiceMatrix}[#6] #5 \end{pNiceMatrix}$}} ;
+				\node[above=0pt of MatriceAB,anchor=south] (MatriceB) {{$\begin{pNiceMatrix}[#6] #4 \end{pNiceMatrix}$}} ;
+			}%
+			{%
+				\node (MatriceA) at (0,0) {{$\begin{pmatrix} #3 \end{pmatrix}$}} ;
+				\node[right=0pt of MatriceA,anchor=west] (MatriceAB) {{$\begin{pmatrix} #5 \end{pmatrix}$}} ;
+				\node[above=0pt of MatriceAB,anchor=south] (MatriceB) {{$\begin{pmatrix} #4 \end{pmatrix}$}} ;
+			}%
+	\end{tikzpicture}%
+}
+
+%===OPÉRATIONS POSÉES (comme PfL)
+\newlength{\siowidestcharwd}
+\newlength{\siocharwd}
+\newlength{\sioheightercharht}
+
+\defKV[sioposeoperation]{%
+	Base=\def\PoseOpeBase{#1},%
+	LimiteCapac=\def\PoseOpeLimit{#1},%
+	SymbDecal=\def\PoseOpeSymb{#1},%
+	Offset=\def\PoseOpeOffset{#1},%
+	CouleurRetenue=\def\PoseOpeColReten{#1}
+}
+
+\setKVdefault[sioposeoperation]{%
+	Base=dec,%
+	SymbDecal=.,%
+	Interm=true,%
+	Offset=6pt,%
+	AffEgal=true,%
+	LimiteCapac=0,%
+	CouleurRetenue=red,%
+	AffRetenues=true
+}
+
+\NewDocumentCommand\SioIntCalcMaxWidth{ m }{%
+	\StrLen{#1}[\tmplen]%
+	\setlength{\siowidestcharwd}{0pt}
+	\xintFor* ##1 in {\xintSeq{1}{\tmplen}}\do{%
+		\StrChar{#1}{##1}[\tmpchar]%
+		\settowidth{\siocharwd}{\tmpchar}%
+		\setlength{\siowidestcharwd}{\maxof{\siowidestcharwd}{\siocharwd}}%
+		
+		
+	}%
+}
+
+\NewDocumentCommand\SioIntCreateBoxNumbers{ O{c} m }{%
+	\IfStrEqCase{\PoseOpeBase}{%
+		{dec}{\SioIntCalcMaxWidth{0123456789}}%
+		{bin}{\SioIntCalcMaxWidth{01}}%
+		{hex}{\SioIntCalcMaxWidth{0123456789ABCDEF}}%
+	}%
+	\addtolength{\siowidestcharwd}{\PoseOpeOffset/2}%
+	\StrLen{#2}[\tmplennumber]%
+	\xintFor* ##1 in {\xintSeq{1}{\tmplennumber}}\do{%
+		\StrChar{#2}{##1}[\tmpchiff]%
+		\makebox[\the\siowidestcharwd][#1]{\tmpchiff}%
+	}%
+}
+
+\newcommand\SioAffRetenue[1]{%
+	\textcolor{\PoseOpeColReten}{\scalebox{0.5}[0.5]{#1}}%
+}
+
+\NewDocumentCommand\SioIntCreateBoxNumbersRetenue{ m }{%
+	\IfStrEqCase{\PoseOpeBase}{%
+		{dec}{\SioIntCalcMaxWidth{0123456789}}%
+		{bin}{\SioIntCalcMaxWidth{01}}%
+		{hex}{\SioIntCalcMaxWidth{0123456789ABCDEF}}%
+	}%
+	\addtolength{\siowidestcharwd}{\PoseOpeOffset/2}%
+	\StrLen{#1}[\tmplennumber]%
+	\xintFor* ##1 in {\xintSeq{1}{\tmplennumber}}\do{%
+		\StrChar{#1}{##1}[\tmpchiff]%
+		\IfEq{\tmpchiff}{X}%
+			{\makebox[\the\siowidestcharwd][c]{\textcolor{\PoseOpeColReten}{\scalebox{0.5}[0.5]{}}}}%
+			{\makebox[\the\siowidestcharwd][c]{\textcolor{\PoseOpeColReten}{\scalebox{0.5}[0.5]{\tmpchiff}}}}%
+	}%
+}
+
+\NewDocumentCommand\SioIntPoseAddition{ m m D<>{} }{%
+	\StrLen{#1}[\nbchiffA]%
+	%essai des retenues ??
+	\xdef\ListeRetenues{X}%
+	\xintFor* ##1 in {\xintSeq{1}{\nbchiffA}}\do{%
+		\StrRight{#1}{##1}[\tmpinterA]%
+		\StrRight{#2}{##1}[\tmpinterB]%
+		\IfStrEqCase{\PoseOpeBase}{%
+			{dec}{\xdef\rescalcrete{\xinteval{\tmpinterA+\tmpinterB}}}%
+			{bin}{\xdef\rescalcrete{\xintDecToBin{\xinteval{\xintBinToDec{\tmpinterA}+\xintBinToDec{\tmpinterB}}}}}%
+			{hex}{\xdef\rescalcrete{\xintDecToHex{\xinteval{\xintHexToDec{\tmpinterA}+\xintHexToDec{\tmpinterB}}}}}%
+		}%
+		\StrLen{\rescalcrete}[\tmpnbchiffresinter]%
+		\xintifboolexpr{\tmpnbchiffresinter > ##1}%
+			{%
+				\StrGobbleRight{\rescalcrete}{##1}[\tmpretenue]%
+				\xdef\ListeRetenues{\tmpretenue\ListeRetenues}%
+			}%
+			{%
+				\xintifboolexpr{##1 == \nbchiffA}{}{\xdef\ListeRetenues{X\ListeRetenues}}%
+			}%
+	}%
+	%suite
+	\IfStrEqCase{\PoseOpeBase}{%
+		{dec}{\xdef\rescalcbin{\xinteval{#1+#2}}}%
+		{bin}{\xdef\rescalcbin{\xintDecToBin{\xinteval{\xintBinToDec{#1}+\xintBinToDec{#2}}}}}%
+		{hex}{\xdef\rescalcbin{\xintDecToHex{\xinteval{\xintHexToDec{#1}+\xintHexToDec{#2}}}}}%
+	}%
+	\xintifboolexpr{\PoseOpeLimit > 0 }{\StrRight{\rescalcbin}{\PoseOpeLimit}[\rescalcbin]}{}%
+	%\ensuremath{\begin{array}{@{\,}r@{\hspace{\PoseOpeOffset}}r@{\,}}
+	\ensuremath{\begin{NiceArray}[#3]{@{\,}r@{\hspace{\PoseOpeOffset}}r@{\,}}
+		\ifboolKV[sioposeoperation]{AffRetenues}{\RowStyle[cell-space-limits=0pt]{} & \SioIntCreateBoxNumbersRetenue{\ListeRetenues} \\[-0.5\sioheightercharht]}{}
+		\RowStyle[nb-rows=*,cell-space-limits=1pt]{}  & \SioIntCreateBoxNumbers{#1} \\
+		+ & \SioIntCreateBoxNumbers{#2} \\
+		\hline
+		\ifboolKV[sioposeoperation]{AffEgal}{=}{} & \SioIntCreateBoxNumbers{\rescalcbin} \\
+	\end{NiceArray}}%
+	%\end{array}}%
+}
+
+\NewDocumentCommand\SioIntPoseSoustraction{ m m D<>{} }{%
+	\IfStrEqCase{\PoseOpeBase}{%
+		{dec}{\xdef\rescalcbin{\xinteval{#1-#2}}}%
+		{bin}{\xdef\rescalcbin{\xintDecToBin{\xinteval{\xintBinToDec{#1}-\xintBinToDec{#2}}}}}%
+		{hex}{\xdef\rescalcbin{\xintDecToHex{\xinteval{\xintHexToDec{#1}-\xintHexToDec{#2}}}}}%
+	}%
+	%bourrage de zéros pour les retenues
+	\StrLen{#1}[\lenA]\StrLen{#2}[\lenB]%
+	\xdef\BwithZeros{#2}%
+	\xintifboolexpr{ \lenA > \lenB }%
+		{%
+			\xintFor* ##1 in {\xintSeq{1}{\xinteval{\lenA-\lenB}}}\do{\xdef\BwithZeros{0\BwithZeros}}%
+		}%
+		{}%
+	%suite
+	\xintifboolexpr{\PoseOpeLimit > 0 }{\StrRight{\rescalcbin}{\PoseOpeLimit}[\rescalcbin]}{}%
+	%\ensuremath{\begin{array}{@{\,}r@{\hspace{\PoseOpeOffset}}r@{\,}}
+	\ifboolKV[sioposeoperation]{AffRetenues}{%
+	\ensuremath{\begin{NiceArray}[#3]{@{\,}r@{\hspace{\PoseOpeOffset/2}}r@{\,}}
+		\RowStyle[nb-rows=*,cell-space-limits=1pt]{}
+		& \IfStrEqCase{\PoseOpeBase}{%
+			{dec}{\SioIntCalcMaxWidth{0123456789}}%
+			{bin}{\SioIntCalcMaxWidth{01}}%
+			{hex}{\SioIntCalcMaxWidth{0123456789ABCDEF}}%
+		}%
+		\addtolength{\siowidestcharwd}{\PoseOpeOffset/2}%
+		\StrLen{#1}[\tmplennumber]%
+		\xintFor* ##1 in {\xintSeq{1}{\tmplennumber}}\do{%
+			\xdef\tmplenctr{\inteval{\tmplennumber-##1+1}}%
+			\StrChar{#1}{##1}[\tmpchiff]%
+			\StrRight{#1}{\tmplenctr}[\tmpA]%
+			\StrRight{\BwithZeros}{\tmplenctr}[\tmpB]%
+			\IfStrEqCase{\PoseOpeBase}{%
+				{dec}{\xdef\rescalctmp{\xinteval{\tmpA-\tmpB}}}%
+				{bin}{\xdef\rescalctmp{\xinteval{\xintBinToDec{\tmpA}-\xintBinToDec{\tmpB}}}}%
+				{hex}{\xdef\rescalctmp{\xinteval{\xintHexToDec{\tmpA}-\xintHexToDec{\tmpB}}}}%
+			}%
+			\xintifboolexpr{ \rescalctmp >= 0 }%
+				{\makebox[\the\siowidestcharwd][r]{\tmpchiff}}%
+				%{\makebox[\the\siowidestcharwd][r]{${}_{\textcolor{\PoseOpeColReten}{\scalebox{0.5}[0.5]{\text{1}}}}$\kern-0.1em\tmpchiff}}%
+				{\makebox[\the\siowidestcharwd][r]{\raisebox{-0.5\height}{\textcolor{\PoseOpeColReten}{\scalebox{0.5}[0.5]{\text{1}}}}\kern-0.1em\tmpchiff}}%
+		} \\
+		- & \IfStrEqCase{\PoseOpeBase}{%
+			{dec}{\SioIntCalcMaxWidth{0123456789}}%
+			{bin}{\SioIntCalcMaxWidth{01}}%
+			{hex}{\SioIntCalcMaxWidth{0123456789ABCDEF}}%
+		}%
+		\addtolength{\siowidestcharwd}{\PoseOpeOffset/2}%
+		\StrLen{#1}[\tmplennumber]%
+		\StrChar{#2}{\lenB}[\tmplastB]%
+		\xintFor* ##1 in {\xintSeq{1}{\xinteval{\tmplennumber-1}}}\do{%
+			\xdef\tmplenctr{\inteval{\tmplennumber-##1}}%
+			\StrChar{\BwithZeros}{##1}[\tmpchiff]%
+			\StrRight{#1}{\tmplenctr}[\tmpA]%
+			\StrRight{\BwithZeros}{\tmplenctr}[\tmpB]%
+			\IfStrEqCase{\PoseOpeBase}{%
+				{dec}{\xdef\rescalctmp{\xinteval{\tmpA-\tmpB}}}%
+				{bin}{\xdef\rescalctmp{\xinteval{\xintBinToDec{\tmpA}-\xintBinToDec{\tmpB}}}}%
+				{hex}{\xdef\rescalctmp{\xinteval{\xintHexToDec{\tmpA}-\xintHexToDec{\tmpB}}}}%
+			}%
+			\xintifboolexpr{ \rescalctmp >= 0 }%
+				{\makebox[\the\siowidestcharwd][r]{\xintifboolexpr{ ##1 <= \lenA-\lenB }{}{\tmpchiff}}}%
+				%{\makebox[\the\siowidestcharwd][r]{${}_{\textcolor{\PoseOpeColReten}{\scalebox{0.5}[0.5]{\text{1}}}}$\xintifboolexpr{ ##1 <= \lenA-\lenB }{}{\kern-0.1em\tmpchiff}}}%
+				{\makebox[\the\siowidestcharwd][r]{\raisebox{-0.5\height}{\textcolor{\PoseOpeColReten}{\scalebox{0.5}[0.5]{\text{1}}}}\xintifboolexpr{ ##1 <= \lenA-\lenB }{\kern0.25em}{\kern-0.1em\tmpchiff}}}%
+		}\makebox[\the\siowidestcharwd][r]{\tmplastB} \\
+		
+		%\SioIntCreateBoxNumbers{#2} \\
+		\hline
+		\ifboolKV[sioposeoperation]{AffEgal}{=}{} &\SioIntCreateBoxNumbers[r]{\rescalcbin} \\
+	\end{NiceArray}}%
+	}%
+	{%
+	\ensuremath{\begin{NiceArray}[#3]{@{\,}r@{\hspace{\PoseOpeOffset}}r@{\,}}
+		\RowStyle[nb-rows=*,cell-space-limits=1pt]{}
+		& \SioIntCreateBoxNumbers{#1} \\
+		- & \SioIntCreateBoxNumbers{#2} \\
+		\hline
+		\ifboolKV[sioposeoperation]{AffEgal}{=}{} & \SioIntCreateBoxNumbers{\rescalcbin} \\
+	\end{NiceArray}}%
+	}%
+	%\end{array}}%
+}
+
+\NewDocumentCommand\SioIntPoseMultiplication{ m m D<>{} }{%
+	\StrLen{#1}[\nbligninit]%
+	\StrLen{#2}[\nbligninter]%
+	\IfStrEqCase{\PoseOpeBase}{%
+		{dec}{\xdef\rescalcbin{\xinteval{#1*#2}}}%
+		{bin}{\xdef\rescalcbin{\xintDecToBin{\xinteval{\xintBinToDec{#1}*\xintBinToDec{#2}}}}}%
+		{hex}{\xdef\rescalcbin{\xintDecToHex{\xinteval{\xintHexToDec{#1}*\xintHexToDec{#2}}}}}%
+	}%
+	\xintifboolexpr{\PoseOpeLimit > 0 }{\StrRight{\rescalcbin}{\PoseOpeLimit}[\rescalcbin]}{}%
+	%\ensuremath{\begin{array}{@{\,}r@{\hspace{\PoseOpeOffset}}r@{\,}}
+	\ensuremath{\begin{NiceArray}[#3]{@{\,}r@{\hspace{\PoseOpeOffset}}r@{\,}}
+		\RowStyle[nb-rows=*,cell-space-limits=1pt]{}
+		& \SioIntCreateBoxNumbers{#1} \\
+		\times & \SioIntCreateBoxNumbers{#2} \\
+		\ifboolKV[sioposeoperation]{Interm}%
+			{%
+				\hline
+				\xintFor* ##1 in {\xintSeq{1}{\nbligninter}}\do{%
+					\xintifboolexpr{##1 == 1}{}{+}&
+					\xdef\tmpindice{\inteval{\nbligninter-##1+1}}\StrChar{#2}{\tmpindice}[\tmpchiff]\IfStrEqCase{\PoseOpeBase}{{dec}{\xdef\rescalcbininter{\xinteval{#1*\tmpchiff}}}{bin}{\xdef\rescalcbininter{\xintDecToBin{\xinteval{\xintBinToDec{#1}*\xintBinToDec{\tmpchiff}}}}}{hex}{\xdef\rescalcbininter{\xintDecToHex{\xinteval{\xintHexToDec{#1}*\xintHexToDec{\tmpchiff}}}}}}%
+					\IfEq{\tmpchiff}{0}%
+						{\xdef\rescalcbininter{}\xintFor* ##2 in {\xintSeq{1}{\nbligninit}}\do{\xdef\rescalcbininter{0\rescalcbininter}}%
+						}{}%
+					\xintifboolexpr{\PoseOpeLimit > 0 }{\StrRight{\rescalcbininter}{\PoseOpeLimit}[\rescalcbininter]}{}%
+					\SioIntCreateBoxNumbers{\rescalcbininter}
+					\xintifboolexpr{##1 == 1}{}{\xintFor* ##2 in {\xintSeq{1}{##1-1}}\do{\makebox[\the\siowidestcharwd][c]{\PoseOpeSymb}}}\\
+				}%
+			}%
+			{}%
+		\hline
+		\ifboolKV[sioposeoperation]{AffEgal}{=}{} & \SioIntCreateBoxNumbers{\rescalcbin} \\
+	\end{NiceArray}}%
+	%\end{array}}%
+}
+
+\NewDocumentCommand\OpeBinDecHex{ O{} m D<>{} }{%
+	\restoreKV[sioposeoperation]%
+	\setKV[sioposeoperation]{#1}%
+	\IfStrEqCase{\PoseOpeBase}{%
+		{dec}{\settoheight{\sioheightercharht}{\hbox{0123456789}}}%
+		{bin}{\settoheight{\sioheightercharht}{\hbox{01}}}%
+		{hex}{\settoheight{\sioheightercharht}{\hbox{0123456789ABCDEF}}}%
+	}%
+	\IfSubStr{#2}{+}%
+		{%
+			\StrCut{#2}{+}{\tmpcalcA}{\tmpcalcB}%
+			\SioIntPoseAddition{\tmpcalcA}{\tmpcalcB}<#3>
+		}%
+		{}%
+	\IfSubStr{#2}{-}%
+		{%
+			\StrCut{#2}{-}{\tmpcalcA}{\tmpcalcB}%
+			\SioIntPoseSoustraction{\tmpcalcA}{\tmpcalcB}<#3>
+		}%
+		{}%
+	\IfSubStr{#2}{*}%
+		{%
+			\StrCut{#2}{*}{\tmpcalcA}{\tmpcalcB}%
+			\SioIntPoseMultiplication{\tmpcalcA}{\tmpcalcB}<#3>
+		}%
+		{}%
+}
 
 \endinput
