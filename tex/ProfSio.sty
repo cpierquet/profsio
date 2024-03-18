@@ -3,7 +3,8 @@
 %            : Luatruthtable from Chetan Shirore and Dr. Ajit Kumar https://ctan.org/pkg/luatruthtable
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{ProfSio}[2023/02/26 0.2.1 Pour les enseignants de Maths en BTS SIO]
+\ProvidesPackage{ProfSio}[2023/03/17 0.2.2 Pour les enseignants de Maths en BTS SIO]
+%0.2.2	Ajout d'une clé [enonce] pour la résolution matricielle de système (aff/naff la ligne d'énoncé)
 %0.2.1	Opérations posées (+,-,×) avec bin/hex/dec
 %0.2.0	Travail sur les systèmes 3x3 par matrices et la présentation d'un produit matriciel
 %0.1.9	Travail sur les chemins de longueur donnée + fermeture transitive
@@ -2066,7 +2067,8 @@ end
 	NomSysteme={},%
 	Inconnues=xyz,%
 	Brut=false,%
-	OptionNiceMatrix={1pt}
+	OptionNiceMatrix={1pt},%
+	Enonce=true
 }
 
 \NewDocumentCommand\ResolSystemeMatrices{ O{} D<>{} m O{#3} O{xyz} }{%
@@ -2191,7 +2193,11 @@ end
 				}%
 		}%
 		{%
-			On considère le système $\IfEq{\ResolSysMatNameSys}{}{}{\ResolSysMatNameSys \text{ : }} \systeme[#5]{#4}$.\\
+			\ifboolKV[resolsysmatrix]{Enonce}%
+				{%
+					On considère le système $\IfEq{\ResolSysMatNameSys}{}{}{\ResolSysMatNameSys \text{ : }} \systeme[#5]{#4}$.\\
+				}%
+				{}%
 			Matriciellement, le système s'écrit sous la forme $\tmpnamematA\times \tmpnamematX = \tmpnamematB$ avec :%
 			\[%
 			\tmpnamematA = \begin{pNiceMatrix}[cell-space-limits=\ResolSysMatOpt] {\MatAffA}&{\MatAffB}&{\MatAffC} \\ {\MatAffD}&{\MatAffE}&{\MatAffF} \\ {\MatAffG}&{\MatAffH}&{\MatAffI} \end{pNiceMatrix}
@@ -2261,8 +2267,6 @@ end
 		\StrChar{#1}{##1}[\tmpchar]%
 		\settowidth{\siocharwd}{\tmpchar}%
 		\setlength{\siowidestcharwd}{\maxof{\siowidestcharwd}{\siocharwd}}%
-		
-		
 	}%
 }
 
