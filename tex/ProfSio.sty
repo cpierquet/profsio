@@ -3,7 +3,12 @@
 %            : Luatruthtable from Chetan Shirore and Dr. Ajit Kumar https://ctan.org/pkg/luatruthtable
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{ProfSio}[2023/03/17 0.2.2 Pour les enseignants de Maths en BTS SIO]
+\ProvidesPackage{ProfSio}[2024/05/12 0.2.7 Pour les enseignants de Maths en BTS SIO]
+%0.2.6	Correction d'un bug dans les simplifications de Karnaugh
+%0.2.6	Corrections dans les simplifications de Karnaugh
+%0.2.5	Ajout de clés pour les tables de vérité, [Vide], pour ne pas le remplir
+%0.2.4	Ajout d'une commande pour afficher (sans simplifier) une expression booléenne + tables en base donnée + Possibilité math dans diag sagitt
+%0.2.3	Ajout d'une clé [Dense] pour condenser la résolution matricielle de système + commande \KarnaughBlocRegroupAuto pour créer les blocs automatiquement
 %0.2.2	Ajout d'une clé [enonce] pour la résolution matricielle de système (aff/naff la ligne d'énoncé)
 %0.2.1	Opérations posées (+,-,×) avec bin/hex/dec
 %0.2.0	Travail sur les systèmes 3x3 par matrices et la présentation d'un produit matriciel
@@ -556,8 +561,6 @@
 		}%
 }
 
-
-
 \newcommand\KarnaughBlocRegroup[3][]{%
 	\useKVdefault[blockarnaugh]%
 	\setKV[blockarnaugh]{#1}%
@@ -586,6 +589,144 @@
 			-- ($(A#3)+(-\KGHdecalage,\KGHdecalage)$) -- ($(A\KGHia\KGHjb)+(\KGHdecalage,\KGHdecalage)$);%
 		}%
 		{}%
+}
+
+\defKV[blocksarnaugh]{%
+	Decalages=\def\KGHdecalage{#1},%
+	Couleurs=\def\KGHcouleur{#1}
+}
+
+\setKVdefault[blocksarnaugh]{%
+	Decalages={2pt,1pt,-1pt},%
+	Couleurs={red,blue,violet}
+}
+
+\newcommand\KarnaughBlocRegroupAuto[2][]{%
+	%1 = clés blocs
+	\useKVdefault[blocksarnaugh]%
+	\setKV[blocksarnaugh]{#1}%
+	\itemtomacro\ListeVariablesKGH[1]{\VarTMPA}%
+	\itemtomacro\ListeVariablesKGH[2]{\VarTMPB}%
+	\itemtomacro\ListeVariablesKGH[3]{\VarTMPC}%
+	%substitutions pour placement auto
+	\StrSubstitute{#2}{\VarTMPA}{AA}[\knghbintransf]%
+	\StrSubstitute{\knghbintransf}{\VarTMPB}{BB}[\knghbintransf]%
+	\StrSubstitute{\knghbintransf}{\VarTMPC}{CC}[\knghbintransf]%
+	%liste des regroupements
+	\setsepchar{+}%
+	\readlist*\knghlstblocks{\knghbintransf}%
+	%liste décalages/couleurs
+	\setsepchar{,}%
+	\readlist*\knghlstblockscolors{\KGHcouleur}%
+	\readlist*\knghlstblocksdecals{\KGHdecalage}%
+	\xintFor* ##1 in {\xintSeq{1}{\knghlstblockslen}}\do{%
+		\itemtomacro\knghlstblocks[##1]\tmpblockkngh%
+		\itemtomacro\knghlstblockscolors[##1]\tmpblockknghcol%
+		\itemtomacro\knghlstblocksdecals[##1]\tmpblockknghdecal%
+		\ifboolKV[tblkgh]{StyleAlternatif}%
+			{%
+				\IfStrEqCase{\tmpblockkngh}{%
+					%calculs pour 1 lettre
+					{(AA)}{\KarnaughBlocRegroup[Type=Centre,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{20}{42}}%
+					{(BB)}{\KarnaughBlocRegroup[Type=Centre,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{10}{32}}
+					{(CC)}{\KarnaughBlocRegroup[Type=Centre,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{00}{41}}%
+					{(AA*)}{\KarnaughBlocRegroup[Type=Centre,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{00}{22}}%
+					{(BB*)}{\KarnaughBlocRegroup[Type=Gauche,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{00}{12}\KarnaughBlocRegroup[Type=Droite,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{40}{32}}%
+					{(CC*)}{\KarnaughBlocRegroup[Type=Centre,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{01}{42}}%
+					%calculs pour 2 lettres
+					{(AABB)}{\KarnaughBlocRegroup[Type=Centre,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{20}{31}}%
+					{(AACC*)}{\KarnaughBlocRegroup[Type=Centre,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{21}{42}}%
+					{(AABB*)}{\KarnaughBlocRegroup[Type=Centre,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{30}{42}}%
+					{(AA*BB)}{\KarnaughBlocRegroup[Type=Centre,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{10}{22}}%
+					{(AA*CC*)}{\KarnaughBlocRegroup[Type=Centre,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{01}{22}}%
+					{(AA*BB*)}{\KarnaughBlocRegroup[Type=Centre,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{00}{12}}%
+					{(AACC)}{\KarnaughBlocRegroup[Type=Centre,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{20}{41}}%
+					{(AA*CC)}{\KarnaughBlocRegroup[Type=Centre,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{00}{21}}%
+					{(BBCC)}{\KarnaughBlocRegroup[Type=Centre,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{10}{31}}%
+					{(BBCC*)}{\KarnaughBlocRegroup[Type=Centre,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{11}{32}}%
+					{(BB*CC*)}{\KarnaughBlocRegroup[Type=Gauche,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{01}{12}\KarnaughBlocRegroup[Type=Droite,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{41}{32}}%
+					{(BB*CC)}{\KarnaughBlocRegroup[Type=Gauche,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{00}{11}\KarnaughBlocRegroup[Type=Droite,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{40}{31}}%
+					%calculs pour 3 lettres
+					{(AABBCC)}{\KarnaughBlocRegroup[Type=Centre,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{20}{31}}%
+					{(AABBCC*)}{\KarnaughBlocRegroup[Type=Centre,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{21}{32}}%
+					{(AABB*CC*)}{\KarnaughBlocRegroup[Type=Centre,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{31}{42}}%
+					{(AABB*CC)}{\KarnaughBlocRegroup[Type=Centre,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{30}{41}}%
+					{(AA*BBCC)}{\KarnaughBlocRegroup[Type=Centre,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{10}{21}}%
+					{(AA*BBCC*)}{\KarnaughBlocRegroup[Type=Centre,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{11}{22}}%
+					{(AA*BB*CC*)}{\KarnaughBlocRegroup[Type=Centre,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{01}{12}}%
+					{(AA*BB*CC)}{\KarnaughBlocRegroup[Type=Centre,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{00}{11}}%
+				}%
+			}%
+			{%styles classiques, normal ou swap
+				\ifboolKV[tblkgh]{Swap}%
+					{%
+						\IfStrEqCase{\tmpblockkngh}{%
+							%calculs pour 1 lettre
+							{(AA)}{\KarnaughBlocRegroup[Type=Centre,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{01}{42}}%
+							{(BB)}{\KarnaughBlocRegroup[Type=Centre,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{00}{22}}%
+							{(CC)}{\KarnaughBlocRegroup[Type=Centre,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{10}{32}}
+							{(AA*)}{\KarnaughBlocRegroup[Type=Centre,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{00}{41}}%
+							{(BB*)}{\KarnaughBlocRegroup[Type=Centre,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{20}{44}}%
+							{(CC*)}{\KarnaughBlocRegroup[Type=Gauche,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{00}{12}\KarnaughBlocRegroup[Type=Droite,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{40}{32}}%%
+							%calculs pour 2 lettres
+							{(AABB)}{\KarnaughBlocRegroup[Type=Centre,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{01}{22}}%
+							{(AACC*)}{\KarnaughBlocRegroup[Type=Gauche,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{01}{12}\KarnaughBlocRegroup[Type=Droite,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{41}{32}}%
+							{(AABB*)}{\KarnaughBlocRegroup[Type=Centre,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{21}{42}}%
+							{(AA*BB)}{\KarnaughBlocRegroup[Type=Centre,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{00}{21}}%
+							{(AA*CC*)}{\KarnaughBlocRegroup[Type=Gauche,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{00}{11}\KarnaughBlocRegroup[Type=Droite,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{40}{31}}%
+							{(AA*BB*)}{\KarnaughBlocRegroup[Type=Centre,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{20}{41}}%
+							{(AACC)}{\KarnaughBlocRegroup[Type=Centre,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{11}{32}}%
+							{(AA*CC)}{\KarnaughBlocRegroup[Type=Centre,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{10}{31}}%
+							{(BBCC)}{\KarnaughBlocRegroup[Type=Centre,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{10}{22}}%
+							{(BBCC*)}{\KarnaughBlocRegroup[Type=Centre,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{00}{12}}%
+							{(BB*CC*)}{\KarnaughBlocRegroup[Type=Centre,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{30}{42}}%
+							{(BB*CC)}{\KarnaughBlocRegroup[Type=Centre,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{20}{32}}%
+							%calculs pour 3 lettres
+							{(AABBCC)}{\KarnaughBlocRegroup[Type=Centre,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{11}{22}}%
+							{(AABBCC*)}{\KarnaughBlocRegroup[Type=Centre,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{01}{12}}%
+							{(AABB*CC*)}{\KarnaughBlocRegroup[Type=Centre,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{31}{42}}%
+							{(AABB*CC)}{\KarnaughBlocRegroup[Type=Centre,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{20}{31}}%
+							{(AA*BBCC)}{\KarnaughBlocRegroup[Type=Centre,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{10}{21}}%
+							{(AA*BBCC*)}{\KarnaughBlocRegroup[Type=Centre,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{00}{11}}%
+							{(AA*BB*CC*)}{\KarnaughBlocRegroup[Type=Centre,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{30}{41}}%
+							{(AA*BB*CC)}{\KarnaughBlocRegroup[Type=Centre,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{20}{31}}%
+						}%
+					}%
+					{%
+						\IfStrEqCase{\tmpblockkngh}{%
+							%calculs pour 1 lettre
+							{(AA)}{\KarnaughBlocRegroup[Type=Centre,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{01}{42}}%
+							{(BB)}{\KarnaughBlocRegroup[Type=Centre,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{00}{22}}%
+							{(CC)}{\KarnaughBlocRegroup[Type=Gauche,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{00}{12}\KarnaughBlocRegroup[Type=Droite,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{40}{32}}%
+							{(AA*)}{\KarnaughBlocRegroup[Type=Centre,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{00}{41}}%
+							{(BB*)}{\KarnaughBlocRegroup[Type=Centre,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{20}{44}}%
+							{(CC*)}{\KarnaughBlocRegroup[Type=Centre,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{10}{32}}%
+							%calculs pour 2 lettres
+							{(AABB)}{\KarnaughBlocRegroup[Type=Centre,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{01}{22}}%
+							{(AACC*)}{\KarnaughBlocRegroup[Type=Centre,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{11}{32}}%
+							{(AABB*)}{\KarnaughBlocRegroup[Type=Centre,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{21}{42}}%
+							{(AA*BB)}{\KarnaughBlocRegroup[Type=Centre,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{00}{21}}%
+							{(AA*CC*)}{\KarnaughBlocRegroup[Type=Centre,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{10}{31}}%
+							{(AA*BB*)}{\KarnaughBlocRegroup[Type=Centre,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{20}{41}}%
+							{(AACC)}{\KarnaughBlocRegroup[Type=Gauche,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{01}{12}\KarnaughBlocRegroup[Type=Droite,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{41}{32}}%
+							{(AA*CC)}{\KarnaughBlocRegroup[Type=Gauche,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{00}{11}\KarnaughBlocRegroup[Type=Droite,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{40}{31}}%
+							{(BBCC)}{\KarnaughBlocRegroup[Type=Centre,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{00}{12}}%
+							{(BBCC*)}{\KarnaughBlocRegroup[Type=Centre,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{10}{22}}%
+							{(BB*CC*)}{\KarnaughBlocRegroup[Type=Centre,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{20}{32}}%
+							{(BB*CC)}{\KarnaughBlocRegroup[Type=Centre,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{30}{42}}%
+							%calculs pour 3 lettres
+							{(AABBCC)}{\KarnaughBlocRegroup[Type=Centre,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{01}{12}}%
+							{(AABBCC*)}{\KarnaughBlocRegroup[Type=Centre,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{11}{22}}%
+							{(AABB*CC*)}{\KarnaughBlocRegroup[Type=Centre,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{21}{32}}%
+							{(AABB*CC)}{\KarnaughBlocRegroup[Type=Centre,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{30}{41}}%
+							{(AA*BBCC)}{\KarnaughBlocRegroup[Type=Centre,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{00}{11}}%
+							{(AA*BBCC*)}{\KarnaughBlocRegroup[Type=Centre,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{10}{21}}%
+							{(AA*BB*CC*)}{\KarnaughBlocRegroup[Type=Centre,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{20}{31}}%
+							{(AA*BB*CC)}{\KarnaughBlocRegroup[Type=Centre,Couleur=\tmpblockknghcol,Decalage=\tmpblockknghdecal]{30}{41}}%
+						}%
+					}%
+			}%
+	}%
 }
 
 %------Graphes
@@ -749,7 +890,9 @@
 %------Diagramme Sagittal
 \defKV[DiagSagitt]{%
 	E=\def\DSListeEltE{#1},%
+	MathE=\def\DSListeEltMathE{#1},%
 	F=\def\DSListeEltF{#1},%
+	MathF=\def\DSListeEltMathF{#1},%
 	DistElem=\def\DSEcartIN{#1},%
 	DistEns=\def\DSEcartIP{#1},%
 	LargEns=\def\DSLargPatates{#1},%
@@ -769,6 +912,8 @@
 
 \setKVdefault[DiagSagitt]{%
 	DistElem=0.75,%
+	MathE={},%
+	MathF={},%
 	DistEns=4,%
 	LargEns=1.5,%
 	NomAppli={$f$},%
@@ -792,6 +937,8 @@
 	\setKV[DiagSagitt]{#2}%
 	\readlist*\DSLstE{\DSListeEltE}%
 	\readlist*\DSLstF{\DSListeEltF}%
+	\IfStrEq{\DSListeEltMathE}{}{}{\readlist*\DSLstMathE{\DSListeEltMathE}}%
+	\IfStrEq{\DSListeEltMathF}{}{}{\readlist*\DSLstMathF{\DSListeEltMathF}}%
 	\def\DSHauteurPatateE{\fpeval{\DSEcartIN*(1+\DSLstElen)}}%
 	\def\DSHauteurPatateF{\fpeval{\DSEcartIN*(1+\DSLstFlen)}}%
 	\def\DSMaxHauteursPatates{\fpeval{max(\DSHauteurPatateE,\DSHauteurPatateF)}}%
@@ -829,13 +976,13 @@
 		\draw[line width=\DSThick] (0,{0.5*\DSHauteurPatateE}) ellipse ({0.5*\DSLargPatates} and {0.5*\DSHauteurPatateE} );
 		\foreach \i in {1,...,\DSLstElen}{%
 			\coordinate (E\DSLstE[\i]) at ({0.05*\DSLargPatates},{(\DSLstElen-\i+1)*\DSEcartIN}) ;%
-			\filldraw[\DSCouleurE] (E\DSLstE[\i]) circle[radius=1.5pt] node[left,font=\DSPolicePatates] {\DSLstE[\i]} ;%
+			\filldraw[\DSCouleurE] (E\DSLstE[\i]) circle[radius=1.5pt] node[left,font=\DSPolicePatates] {\IfStrEq{\DSListeEltMathE}{}{\DSLstE[\i]}{$\DSLstMathE[\i]$}{}} ;%
 		}%
 		%PATATE_F (ok)
 		\draw[line width=\DSThick] ({\DSEcartIP},{0.5*\DSHauteurPatateF-\DSOffsetPatates}) ellipse ({0.5*\DSLargPatates} and {0.5*\DSHauteurPatateF} );
 		\foreach \i in {1,...,\DSLstFlen}{%
 			\coordinate (F\DSLstF[\i]) at ({\DSEcartIP-0.05*\DSLargPatates},{(\DSLstFlen-\i+1)*\DSEcartIN-\DSOffsetPatates}) ;%
-			\filldraw[\DSCouleurF] (F\DSLstF[\i]) circle[radius=1.5pt] node[right,font=\DSPolicePatates] {\DSLstF[\i]} ;%
+			\filldraw[\DSCouleurF] (F\DSLstF[\i]) circle[radius=1.5pt] node[right,font=\DSPolicePatates] {\IfStrEq{\DSListeEltMathF}{}{\DSLstF[\i]}{$\DSLstMathF[\i]$}{}} ;%
 		}%
 		%ARCS
 		\foreach \Deb/\Fin in {#4} {%
@@ -851,6 +998,9 @@
 	E=\def\DSListeEltE{#1},%
 	F=\def\DSListeEltF{#1},%
 	G=\def\DSListeEltG{#1},%
+	MathE=\def\DSListeEltMathE{#1},%
+	MathF=\def\DSListeEltMathF{#1},%
+	MathG=\def\DSListeEltMathG{#1},%
 	DistElem=\def\DSEcartIN{#1},%
 	DistEns=\def\DSEcartIP{#1},%
 	LargEns=\def\DSLargPatates{#1},%
@@ -870,6 +1020,9 @@
 }
 
 \setKVdefault[DiagSagittCompo]{%
+	MathE={},%
+	MathF={},%
+	MathG={},%
 	DistElem=0.75,%
 	DistEns=4,%
 	LargEns=1.5,%
@@ -896,6 +1049,9 @@
 	\readlist*\DSLstE{\DSListeEltE}%
 	\readlist*\DSLstF{\DSListeEltF}%
 	\readlist*\DSLstG{\DSListeEltG}%
+	\IfStrEq{\DSListeEltMathE}{}{}{\readlist*\DSLstMathE{\DSListeEltMathE}}%
+	\IfStrEq{\DSListeEltMathF}{}{}{\readlist*\DSLstMathF{\DSListeEltMathF}}%
+	\IfStrEq{\DSListeEltMathG}{}{}{\readlist*\DSLstMathG{\DSListeEltMathG}}%
 	\def\DSHauteurPatateE{\fpeval{\DSEcartIN*(1+\DSLstElen)}}%
 	\def\DSHauteurPatateF{\fpeval{1.1*\DSEcartIN*(1+\DSLstFlen)}}%
 	\def\DSHauteurPatateG{\fpeval{\DSEcartIN*(1+\DSLstGlen)}}%
@@ -969,19 +1125,19 @@
 		\draw[line width=\DSThick] (0,{0.5*\DSHauteurPatateE}) ellipse ({0.5*\DSLargPatates} and {0.5*\DSHauteurPatateE} );
 		\foreach \i in {1,...,\DSLstElen}{%
 			\coordinate (E\DSLstE[\i]) at ({0.05*\DSLargPatates},{(\DSLstElen-\i+1)*\DSEcartIN}) ;%
-			\filldraw[\DSCouleurE] (E\DSLstE[\i]) circle[radius=1.5pt] node[left,font=\DSPolicePatates] {\DSLstE[\i]} ;%
+			\filldraw[\DSCouleurE] (E\DSLstE[\i]) circle[radius=1.5pt] node[left,font=\DSPolicePatates] {\IfStrEq{\DSListeEltMathE}{}{\DSLstE[\i]}{$\DSLstMathE[\i]$}{}} ;%
 		}%
 		%PATATE_F (ok)
 		\draw[line width=\DSThick] ({\DSEcartIP},{0.5*\DSHauteurPatateF-\DSOffsetPatateF}) ellipse ({0.5*\DSLargPatates} and {0.5*\DSHauteurPatateF} );
 		\foreach \i in {1,...,\DSLstFlen}{%
 			\coordinate (F\DSLstF[\i]) at ({\DSEcartIP},{(\DSLstFlen-\i+1)*1.1*\DSEcartIN-\DSOffsetPatateF}) ;%
-			\filldraw[\DSCouleurF] (F\DSLstF[\i]) circle[radius=1.5pt] node[above=0pt,font=\DSPolicePatates] {\DSLstF[\i]} ;%
+			\filldraw[\DSCouleurF] (F\DSLstF[\i]) circle[radius=1.5pt] node[above=0pt,font=\DSPolicePatates] {\IfStrEq{\DSListeEltMathF}{}{\DSLstF[\i]}{$\DSLstMathF[\i]$}{}} ;%
 		}%
 		%PATATE_G (ok)
 		\draw[line width=\DSThick] ({2*\DSEcartIP},{0.5*\DSHauteurPatateG-\DSOffsetPatateG}) ellipse ({0.5*\DSLargPatates} and {0.5*\DSHauteurPatateG} );
 		\foreach \i in {1,...,\DSLstGlen}{%
 			\coordinate (G\DSLstG[\i]) at ({2*\DSEcartIP-0.05*\DSLargPatates},{(\DSLstGlen-\i+1)*\DSEcartIN-\DSOffsetPatateG}) ;%
-			\filldraw[\DSCouleurG] (G\DSLstG[\i]) circle[radius=1.5pt] node[right,font=\DSPolicePatates] {\DSLstG[\i]} ;%
+			\filldraw[\DSCouleurG] (G\DSLstG[\i]) circle[radius=1.5pt] node[right,font=\DSPolicePatates] {\IfStrEq{\DSListeEltMathG}{}{\DSLstG[\i]}{$\DSLstMathG[\i]$}{}} ;%
 		}%
 		%ARCSf
 		\foreach \Deb/\Fin in {#4} {%
@@ -1355,7 +1511,8 @@ end
 	LargeursColonnes=\def\TTABLElargeurs{#1},%
 	CouleurEnonce=\def\TTABLEcoul{#1},%
 	CodeAvant=\def\TTABLEcodebefore{#1},%
-	CodeApres=\def\TTABLEcodeafter{#1}
+	CodeApres=\def\TTABLEcodeafter{#1},%
+	HauteurVide=\def\TTABLEheightempty{#1},%
 }
 
 \setKVdefault[tableverite]{%
@@ -1364,7 +1521,9 @@ end
 	CouleurEnonce={},
 	CodeAvant={},%
 	CodeApres={},%
-	Swap=false
+	Swap=false,%
+	Vide=false,%
+	HauteurVide={}
 }
 
 \NewDocumentCommand\TableVerite{ O{} D<>{} m m m m }{%
@@ -1377,10 +1536,12 @@ end
 	\setKV[tableverite]{#1}%
 	\setsepchar{,}%
 	\readlist*\TableVeriteVariables{#4}%
+	\xdef\TableVeriteNbLignes{\xinteval{2^(\TableVeriteVariableslen)}}%
 	\readlist*\TableVeriteEnonce{#5}%
 	\readlist*\TableVeriteCalculs{#6}%
 	\StrCut{\TTABLEtruefalse}{/}{\TTTrue}{\TTFalse}%
 	\xdef\TTNbCol{\fpeval{\TableVeriteVariableslen+\TableVeriteEnoncelen}}%\TTNbCol%
+	\xdef\TTNbColMu{\fpeval{\TableVeriteVariableslen+\TableVeriteEnoncelen-1}}%\TTNbCol%
 	\IfStrEq{\TTABLElargeurs}{auto}%
 		{%
 			\begin{NiceTabular}[cell-space-limits=3pt,#2]{|*{\TTNbCol}{c|}}%
@@ -1401,12 +1562,18 @@ end
 		\Body
 		\hline
 		{\TableVeriteVariables[1]}\xintifboolexpr{\TableVeriteVariableslen==1}{}{\xintFor*##1in{\xintSeq{2}{\TableVeriteVariableslen}}\do{&\TableVeriteVariables[##1]}}&\TableVeriteCalculs[1]\xintifboolexpr{\TableVeriteCalculslen==1}{}{\xintFor*##1in{\xintSeq{2}{\TableVeriteCalculslen}}\do{&\TableVeriteCalculs[##1]}} \\ \hline
-		\ifboolKV[tableverite]{Swap}%
+		\ifboolKV[tableverite]{Vide}%
 			{%
-				\GenTruthTable[trtext=\TTTrue,fltext=\TTFalse]{#3}{#5} \\ \hline
+				\xintFor*##1in{\xintSeq{1}{\TableVeriteNbLignes}}\do{\IfStrEq{\TTABLEheightempty}{}{}{\rule{0cm}{\TTABLEheightempty-6pt}}\xintFor*##2in{\xintSeq{2}{\TTNbCol}}\do{&}\\ \hline}
 			}%
 			{%
-				\GenTruthTable*[trtext=\TTTrue,fltext=\TTFalse]{#3}{#5} \\ \hline
+				\ifboolKV[tableverite]{Swap}%
+					{%
+						\GenTruthTable[trtext=\TTTrue,fltext=\TTFalse]{#3}{#5} \\ \hline
+					}%
+					{%
+						\GenTruthTable*[trtext=\TTTrue,fltext=\TTFalse]{#3}{#5} \\ \hline
+					}%
 			}%
 		\CodeAfter
 			\IfStrEq{\TTABLEcodeafter}{}{}{\TTABLEcodeafter}%
@@ -1418,11 +1585,13 @@ end
 %------Simplifications booléennes
 \defKV[SimplifKngh]{%
 	Couleurs=\def\SimplifKnghCoul{#1},%
+	CouleurPlus=\def\SimplifKnghCoulPlus{#1},%
 	Variables=\def\SimplifKnghVar{#1}
 }
 
 \setKVdefault[SimplifKngh]{%
 	Couleurs={black/black/black},%
+	CouleurPlus=black,%
 	Variables={a/b/c},%
 	Swap=false,%
 	Espace=true,%
@@ -1480,262 +1649,263 @@ end
 			\StrSubstitute{\tmp@kngh@binswapb}{2}{1}[\tmp@kngh@bin]%
 		}%
 		{\def\tmp@kngh@bin{#2}}%
+	\def\tmp@kngh@plus{\mathcolor{\SimplifKnghCoulPlus}{+}}%
 	\ensuremath{%
 	\IfStrEq{\tmp@kngh@bin}{00000000}{0}{}%
 	\IfStrEq{\tmp@kngh@bin}{00000001}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
 	\IfStrEq{\tmp@kngh@bin}{00000010}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
 	\IfStrEq{\tmp@kngh@bin}{00000011}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb}{}%
 	\IfStrEq{\tmp@kngh@bin}{00000100}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{00000101}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{00000101}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
 	\IfStrEq{\tmp@kngh@bin}{00000110}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{00000111}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb}{}%
+	\IfStrEq{\tmp@kngh@bin}{00000111}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb}{}%
 	\IfStrEq{\tmp@kngh@bin}{00001000}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C}{}%
 	\IfStrEq{\tmp@kngh@bin}{00001001}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{00001010}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{00001011}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb}{}%
+	\IfStrEq{\tmp@kngh@bin}{00001010}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{00001011}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb}{}%
 	\IfStrEq{\tmp@kngh@bin}{00001100}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B}{}%
-	\IfStrEq{\tmp@kngh@bin}{00001101}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{00001110}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{00001101}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{00001110}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Cb}{}%
 	\IfStrEq{\tmp@kngh@bin}{00001111}{\tmp@kngh@Ab}{}%
 	\IfStrEq{\tmp@kngh@bin}{00010000}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
 	\IfStrEq{\tmp@kngh@bin}{00010001}{\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{00010010}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{00010011}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb+\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{00010100}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{00010101}{\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{00010110}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{00010111}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{00011000}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{00011001}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{00011010}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{00011011}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb+\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{00011100}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{00011101}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B+\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{00011110}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{00011111}{\tmp@kngh@Ab+\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{00010010}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{00010011}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@plus\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{00010100}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{00010101}{\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{00010110}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{00010111}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{00011000}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{00011001}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{00011010}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{00011011}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@plus\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{00011100}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{00011101}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@plus\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{00011110}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{00011111}{\tmp@kngh@Ab\tmp@kngh@plus\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
 	\IfStrEq{\tmp@kngh@bin}{00100000}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{00100001}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{00100001}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
 	\IfStrEq{\tmp@kngh@bin}{00100010}{\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{00100011}{\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb}{}%
-	\IfStrEq{\tmp@kngh@bin}{00100100}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{00100101}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{00100110}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{00100111}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb}{}%
-	\IfStrEq{\tmp@kngh@bin}{00101000}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{00101001}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{00101010}{\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{00101011}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{00101100}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{00101101}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{00101110}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B+\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{00101111}{\tmp@kngh@Ab+\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{00100011}{\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb}{}%
+	\IfStrEq{\tmp@kngh@bin}{00100100}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{00100101}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{00100110}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{00100111}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb}{}%
+	\IfStrEq{\tmp@kngh@bin}{00101000}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{00101001}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{00101010}{\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{00101011}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{00101100}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{00101101}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{00101110}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@plus\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{00101111}{\tmp@kngh@Ab\tmp@kngh@plus\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
 	\IfStrEq{\tmp@kngh@bin}{00110000}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb}{}%
-	\IfStrEq{\tmp@kngh@bin}{00110001}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb+\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{00110010}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb+\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{00110001}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@plus\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{00110010}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@plus\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
 	\IfStrEq{\tmp@kngh@bin}{00110011}{\tmp@kngh@Bb}{}%
-	\IfStrEq{\tmp@kngh@bin}{00110100}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{00110101}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb+\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{00110110}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{00110111}{\tmp@kngh@Bb+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{00111000}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{00111001}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{00111010}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb+\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{00111011}{\tmp@kngh@Bb+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{00111100}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B}{}%
-	\IfStrEq{\tmp@kngh@bin}{00111101}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{00111110}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B+\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{00111111}{\tmp@kngh@Ab+\tmp@kngh@Bb}{}%
+	\IfStrEq{\tmp@kngh@bin}{00110100}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{00110101}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@plus\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{00110110}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{00110111}{\tmp@kngh@Bb\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{00111000}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{00111001}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{00111010}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@plus\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{00111011}{\tmp@kngh@Bb\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{00111100}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B}{}%
+	\IfStrEq{\tmp@kngh@bin}{00111101}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{00111110}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@plus\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{00111111}{\tmp@kngh@Ab\tmp@kngh@plus\tmp@kngh@Bb}{}%
 	\IfStrEq{\tmp@kngh@bin}{01000000}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{01000001}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{01000010}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{01000011}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb}{}%
+	\IfStrEq{\tmp@kngh@bin}{01000001}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{01000010}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{01000011}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb}{}%
 	\IfStrEq{\tmp@kngh@bin}{01000100}{\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{01000101}{\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{01000110}{\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{01000111}{\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb}{}%
-	\IfStrEq{\tmp@kngh@bin}{01001000}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{01001001}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{01001010}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{01001011}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{01001100}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B+\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{01001101}{\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{01001110}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{01001111}{\tmp@kngh@Ab+\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{01010000}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{01010001}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{01010010}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{01010011}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb+\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{01010100}{\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{01010101}{\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{01010110}{\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{01010111}{\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb+\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{01011000}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{01011001}{\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{01011010}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{01011011}{\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{01011100}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B+\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{01011101}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B+\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{01011110}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B+\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{01011111}{\tmp@kngh@Ab+\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{01000101}{\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{01000110}{\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{01000111}{\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb}{}%
+	\IfStrEq{\tmp@kngh@bin}{01001000}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{01001001}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{01001010}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{01001011}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{01001100}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@plus\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{01001101}{\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{01001110}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{01001111}{\tmp@kngh@Ab\tmp@kngh@plus\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{01010000}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{01010001}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{01010010}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{01010011}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@plus\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{01010100}{\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{01010101}{\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{01010110}{\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{01010111}{\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@plus\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{01011000}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{01011001}{\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{01011010}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{01011011}{\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{01011100}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@plus\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{01011101}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@plus\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{01011110}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@plus\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{01011111}{\tmp@kngh@Ab\tmp@kngh@plus\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
 	\IfStrEq{\tmp@kngh@bin}{01100000}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{01100001}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{01100010}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{01100011}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb}{}%
-	\IfStrEq{\tmp@kngh@bin}{01100100}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{01100101}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{01100001}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{01100010}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{01100011}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb}{}%
+	\IfStrEq{\tmp@kngh@bin}{01100100}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{01100101}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
 	\IfStrEq{\tmp@kngh@bin}{01100110}{\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{01100111}{\tmp@kngh@Cb+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb}{}%
-	\IfStrEq{\tmp@kngh@bin}{01101000}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{01101001}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{01101010}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{01101011}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{01101100}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B}{}%
-	\IfStrEq{\tmp@kngh@bin}{01101101}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{01101110}{\tmp@kngh@Cb+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B}{}%
-	\IfStrEq{\tmp@kngh@bin}{01101111}{\tmp@kngh@Ab+\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{01110000}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb}{}%
-	\IfStrEq{\tmp@kngh@bin}{01110001}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{01110010}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb+\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{01110011}{\tmp@kngh@Bb+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{01110100}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb+\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{01110101}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb+\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{01110110}{\tmp@kngh@Cb+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb}{}%
-	\IfStrEq{\tmp@kngh@bin}{01110111}{\tmp@kngh@Bb+\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{01111000}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{01111001}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{01111010}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb+\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{01111011}{\tmp@kngh@Bb+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{01111100}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B}{}%
-	\IfStrEq{\tmp@kngh@bin}{01111101}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B}{}%
-	\IfStrEq{\tmp@kngh@bin}{01111110}{\tmp@kngh@Cb+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb}{}%
-	\IfStrEq{\tmp@kngh@bin}{01111111}{\tmp@kngh@Ab+\tmp@kngh@Bb+\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{01100111}{\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb}{}%
+	\IfStrEq{\tmp@kngh@bin}{01101000}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{01101001}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{01101010}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{01101011}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{01101100}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B}{}%
+	\IfStrEq{\tmp@kngh@bin}{01101101}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{01101110}{\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B}{}%
+	\IfStrEq{\tmp@kngh@bin}{01101111}{\tmp@kngh@Ab\tmp@kngh@plus\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{01110000}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb}{}%
+	\IfStrEq{\tmp@kngh@bin}{01110001}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{01110010}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@plus\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{01110011}{\tmp@kngh@Bb\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{01110100}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@plus\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{01110101}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@plus\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{01110110}{\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb}{}%
+	\IfStrEq{\tmp@kngh@bin}{01110111}{\tmp@kngh@Bb\tmp@kngh@plus\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{01111000}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{01111001}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{01111010}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@plus\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{01111011}{\tmp@kngh@Bb\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{01111100}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B}{}%
+	\IfStrEq{\tmp@kngh@bin}{01111101}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B}{}%
+	\IfStrEq{\tmp@kngh@bin}{01111110}{\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb}{}%
+	\IfStrEq{\tmp@kngh@bin}{01111111}{\tmp@kngh@Ab\tmp@kngh@plus\tmp@kngh@Bb\tmp@kngh@plus\tmp@kngh@Cb}{}%
 	\IfStrEq{\tmp@kngh@bin}{10000000}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{10000001}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{10000010}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{10000011}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb}{}%
-	\IfStrEq{\tmp@kngh@bin}{10000100}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{10000101}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{10000110}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{10000111}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{10000001}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{10000010}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{10000011}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb}{}%
+	\IfStrEq{\tmp@kngh@bin}{10000100}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{10000101}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{10000110}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{10000111}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C}{}%
 	\IfStrEq{\tmp@kngh@bin}{10001000}{\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{10001001}{\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{10001010}{\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{10001011}{\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb}{}%
-	\IfStrEq{\tmp@kngh@bin}{10001100}{\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B}{}%
-	\IfStrEq{\tmp@kngh@bin}{10001101}{\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{10001110}{\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{10001111}{\tmp@kngh@Ab+\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{10001001}{\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{10001010}{\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{10001011}{\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb}{}%
+	\IfStrEq{\tmp@kngh@bin}{10001100}{\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B}{}%
+	\IfStrEq{\tmp@kngh@bin}{10001101}{\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{10001110}{\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{10001111}{\tmp@kngh@Ab\tmp@kngh@plus\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C}{}%
 	\IfStrEq{\tmp@kngh@bin}{10010000}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{10010001}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{10010010}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{10010011}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb}{}%
-	\IfStrEq{\tmp@kngh@bin}{10010100}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{10010101}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{10010110}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{10010111}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb}{}%
-	\IfStrEq{\tmp@kngh@bin}{10011000}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{10010001}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{10010010}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{10010011}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb}{}%
+	\IfStrEq{\tmp@kngh@bin}{10010100}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{10010101}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{10010110}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{10010111}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb}{}%
+	\IfStrEq{\tmp@kngh@bin}{10011000}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C}{}%
 	\IfStrEq{\tmp@kngh@bin}{10011001}{\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{10011010}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{10011011}{\tmp@kngh@C+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb}{}%
-	\IfStrEq{\tmp@kngh@bin}{10011100}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B}{}%
-	\IfStrEq{\tmp@kngh@bin}{10011101}{\tmp@kngh@C+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B}{}%
-	\IfStrEq{\tmp@kngh@bin}{10011110}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{10011111}{\tmp@kngh@Ab+\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{10100000}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{10100001}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{10100010}{\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{10100011}{\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{10100100}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{10100101}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{10100110}{\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{10100111}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb+\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{10101000}{\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{10101001}{\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{10101010}{\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{10101011}{\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb}{}%
-	\IfStrEq{\tmp@kngh@bin}{10101100}{\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{10101101}{\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{10101110}{\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{10101111}{\tmp@kngh@Ab+\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{10110000}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb}{}%
-	\IfStrEq{\tmp@kngh@bin}{10110001}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb+\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{10110010}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{10110011}{\tmp@kngh@Bb+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{10110100}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{10110101}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{10110110}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{10110111}{\tmp@kngh@Bb+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{10111000}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb+\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{10111001}{\tmp@kngh@C+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb}{}%
-	\IfStrEq{\tmp@kngh@bin}{10111010}{\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb}{}%
-	\IfStrEq{\tmp@kngh@bin}{10111011}{\tmp@kngh@Bb+\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{10111100}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B+\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{10111101}{\tmp@kngh@C+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb}{}%
-	\IfStrEq{\tmp@kngh@bin}{10111110}{\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb}{}%
-	\IfStrEq{\tmp@kngh@bin}{10111111}{\tmp@kngh@Ab+\tmp@kngh@Bb+\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{10011010}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{10011011}{\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb}{}%
+	\IfStrEq{\tmp@kngh@bin}{10011100}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B}{}%
+	\IfStrEq{\tmp@kngh@bin}{10011101}{\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B}{}%
+	\IfStrEq{\tmp@kngh@bin}{10011110}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{10011111}{\tmp@kngh@Ab\tmp@kngh@plus\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{10100000}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{10100001}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{10100010}{\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{10100011}{\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{10100100}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{10100101}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{10100110}{\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{10100111}{\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@plus\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{10101000}{\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{10101001}{\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{10101010}{\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{10101011}{\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb}{}%
+	\IfStrEq{\tmp@kngh@bin}{10101100}{\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{10101101}{\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{10101110}{\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{10101111}{\tmp@kngh@Ab\tmp@kngh@plus\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{10110000}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb}{}%
+	\IfStrEq{\tmp@kngh@bin}{10110001}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@plus\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{10110010}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{10110011}{\tmp@kngh@Bb\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{10110100}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{10110101}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{10110110}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{10110111}{\tmp@kngh@Bb\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{10111000}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@plus\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{10111001}{\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb}{}%
+	\IfStrEq{\tmp@kngh@bin}{10111010}{\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb}{}%
+	\IfStrEq{\tmp@kngh@bin}{10111011}{\tmp@kngh@Bb\tmp@kngh@plus\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{10111100}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@plus\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{10111101}{\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@B\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb}{}%
+	\IfStrEq{\tmp@kngh@bin}{10111110}{\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Bb}{}%
+	\IfStrEq{\tmp@kngh@bin}{10111111}{\tmp@kngh@Ab\tmp@kngh@plus\tmp@kngh@Bb\tmp@kngh@plus\tmp@kngh@C}{}%
 	\IfStrEq{\tmp@kngh@bin}{11000000}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B}{}%
-	\IfStrEq{\tmp@kngh@bin}{11000001}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{11000010}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{11000011}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb}{}%
-	\IfStrEq{\tmp@kngh@bin}{11000100}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B+\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{11000101}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B+\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{11000110}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{11000111}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{11001000}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B+\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{11001001}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{11001010}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B+\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{11001011}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb+\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{11000001}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{11000010}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{11000011}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb}{}%
+	\IfStrEq{\tmp@kngh@bin}{11000100}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@plus\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{11000101}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@plus\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{11000110}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{11000111}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{11001000}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@plus\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{11001001}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{11001010}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@plus\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{11001011}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@plus\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C}{}%
 	\IfStrEq{\tmp@kngh@bin}{11001100}{\tmp@kngh@B}{}%
-	\IfStrEq{\tmp@kngh@bin}{11001101}{\tmp@kngh@B+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{11001110}{\tmp@kngh@B+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{11001111}{\tmp@kngh@Ab+\tmp@kngh@B}{}%
-	\IfStrEq{\tmp@kngh@bin}{11010000}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{11010001}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B+\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{11010010}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{11010011}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb+\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{11010100}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B+\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{11010101}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B+\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{11010110}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{11010111}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{11011000}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B+\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{11011001}{\tmp@kngh@C+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B}{}%
-	\IfStrEq{\tmp@kngh@bin}{11011010}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B+\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{11011011}{\tmp@kngh@C+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb}{}%
-	\IfStrEq{\tmp@kngh@bin}{11011100}{\tmp@kngh@B+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{11011101}{\tmp@kngh@B+\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{11011110}{\tmp@kngh@B+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{11011111}{\tmp@kngh@Ab+\tmp@kngh@B+\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{11100000}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{11100001}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{11100010}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B+\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{11100011}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B+\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb}{}%
-	\IfStrEq{\tmp@kngh@bin}{11100100}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B+\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{11100101}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B+\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{11100110}{\tmp@kngh@Cb+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B}{}%
-	\IfStrEq{\tmp@kngh@bin}{11100111}{\tmp@kngh@Cb+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb}{}%
-	\IfStrEq{\tmp@kngh@bin}{11101000}{\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{11101001}{\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{11101010}{\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{11101011}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{11101100}{\tmp@kngh@B+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{11101101}{\tmp@kngh@B+\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{11101110}{\tmp@kngh@B+\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{11101111}{\tmp@kngh@Ab+\tmp@kngh@B+\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{11001101}{\tmp@kngh@B\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{11001110}{\tmp@kngh@B\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{11001111}{\tmp@kngh@Ab\tmp@kngh@plus\tmp@kngh@B}{}%
+	\IfStrEq{\tmp@kngh@bin}{11010000}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{11010001}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@plus\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{11010010}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{11010011}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@plus\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{11010100}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@plus\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{11010101}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@plus\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{11010110}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{11010111}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{11011000}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@plus\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{11011001}{\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B}{}%
+	\IfStrEq{\tmp@kngh@bin}{11011010}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@plus\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{11011011}{\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb}{}%
+	\IfStrEq{\tmp@kngh@bin}{11011100}{\tmp@kngh@B\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{11011101}{\tmp@kngh@B\tmp@kngh@plus\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{11011110}{\tmp@kngh@B\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{11011111}{\tmp@kngh@Ab\tmp@kngh@plus\tmp@kngh@B\tmp@kngh@plus\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{11100000}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{11100001}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{11100010}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@plus\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{11100011}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@plus\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb}{}%
+	\IfStrEq{\tmp@kngh@bin}{11100100}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@plus\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{11100101}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@plus\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{11100110}{\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B}{}%
+	\IfStrEq{\tmp@kngh@bin}{11100111}{\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@Bb}{}%
+	\IfStrEq{\tmp@kngh@bin}{11101000}{\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{11101001}{\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{11101010}{\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{11101011}{\tmp@kngh@A\tmp@kngh@space\tmp@kngh@B\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{11101100}{\tmp@kngh@B\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{11101101}{\tmp@kngh@B\tmp@kngh@plus\tmp@kngh@A\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@Ab\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{11101110}{\tmp@kngh@B\tmp@kngh@plus\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{11101111}{\tmp@kngh@Ab\tmp@kngh@plus\tmp@kngh@B\tmp@kngh@plus\tmp@kngh@Cb}{}%
 	\IfStrEq{\tmp@kngh@bin}{11110000}{\tmp@kngh@A}{}%
-	\IfStrEq{\tmp@kngh@bin}{11110001}{\tmp@kngh@A+\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{11110010}{\tmp@kngh@A+\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{11110011}{\tmp@kngh@A+\tmp@kngh@Bb}{}%
-	\IfStrEq{\tmp@kngh@bin}{11110100}{\tmp@kngh@A+\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{11110101}{\tmp@kngh@A+\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb+\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{11110110}{\tmp@kngh@A+\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{11110111}{\tmp@kngh@A+\tmp@kngh@Bb+\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{11111000}{\tmp@kngh@A+\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{11111001}{\tmp@kngh@A+\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{11111010}{\tmp@kngh@A+\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C+\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
-	\IfStrEq{\tmp@kngh@bin}{11111011}{\tmp@kngh@A+\tmp@kngh@Bb+\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{11111100}{\tmp@kngh@A+\tmp@kngh@B}{}%
-	\IfStrEq{\tmp@kngh@bin}{11111101}{\tmp@kngh@A+\tmp@kngh@B+\tmp@kngh@C}{}%
-	\IfStrEq{\tmp@kngh@bin}{11111110}{\tmp@kngh@A+\tmp@kngh@B+\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{11110001}{\tmp@kngh@A\tmp@kngh@plus\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{11110010}{\tmp@kngh@A\tmp@kngh@plus\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{11110011}{\tmp@kngh@A\tmp@kngh@plus\tmp@kngh@Bb}{}%
+	\IfStrEq{\tmp@kngh@bin}{11110100}{\tmp@kngh@A\tmp@kngh@plus\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{11110101}{\tmp@kngh@A\tmp@kngh@plus\tmp@kngh@B\tmp@kngh@space\tmp@kngh@Cb\tmp@kngh@plus\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{11110110}{\tmp@kngh@A\tmp@kngh@plus\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{11110111}{\tmp@kngh@A\tmp@kngh@plus\tmp@kngh@Bb\tmp@kngh@plus\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{11111000}{\tmp@kngh@A\tmp@kngh@plus\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{11111001}{\tmp@kngh@A\tmp@kngh@plus\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{11111010}{\tmp@kngh@A\tmp@kngh@plus\tmp@kngh@B\tmp@kngh@space\tmp@kngh@C\tmp@kngh@plus\tmp@kngh@Bb\tmp@kngh@space\tmp@kngh@Cb}{}%
+	\IfStrEq{\tmp@kngh@bin}{11111011}{\tmp@kngh@A\tmp@kngh@plus\tmp@kngh@Bb\tmp@kngh@plus\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{11111100}{\tmp@kngh@A\tmp@kngh@plus\tmp@kngh@B}{}%
+	\IfStrEq{\tmp@kngh@bin}{11111101}{\tmp@kngh@A\tmp@kngh@plus\tmp@kngh@B\tmp@kngh@plus\tmp@kngh@C}{}%
+	\IfStrEq{\tmp@kngh@bin}{11111110}{\tmp@kngh@A\tmp@kngh@plus\tmp@kngh@B\tmp@kngh@plus\tmp@kngh@Cb}{}%
 	\IfStrEq{\tmp@kngh@bin}{11111111}{1}{}%
 	}%
 }
@@ -1759,6 +1929,56 @@ end
 	Enonce=true,%
 	Espace=true,%
 	Contraire=false
+}
+
+\NewDocumentCommand\ExprBool{ O{} m D<>{} }{%semble ok
+	\useKVdefault[simplifbool]%
+	\setKV[simplifbool]{#1}%
+	\setsepchar[.]{/}%
+	\readlist*\ListeVariablesKGH{\simplifboolvars}%
+	\itemtomacro\ListeVariablesKGH[1]{\VarTMPA}%
+	\itemtomacro\ListeVariablesKGH[2]{\VarTMPB}%
+	\itemtomacro\ListeVariablesKGH[3]{\VarTMPC}%
+	%gestion des espaces
+	\ifboolKV[simplifbool]{Espace}%
+		{%
+			\def\tmp@kngh@space{\§}%
+		}%
+		{%
+			\def\tmp@kngh@space{}%
+		}%
+	%énoncé
+	\StrSubstitute{#2}{\VarTMPA}{AA}[\knghenoncetransf]%
+	\StrSubstitute{\knghenoncetransf}{\VarTMPB}{BB}[\knghenoncetransf]%
+	\StrSubstitute{\knghenoncetransf}{\VarTMPC}{CC}[\knghenoncetransf]%
+	%\knghenoncetransf%
+	\StrSubstitute{\knghenoncetransf}{(AA)}{\VarTMPA}[\knghenoncetransf]%
+	\StrSubstitute{\knghenoncetransf}{(BB)}{\VarTMPB}[\knghenoncetransf]%
+	\StrSubstitute{\knghenoncetransf}{(CC)}{\VarTMPC}[\knghenoncetransf]%
+	\StrSubstitute{\knghenoncetransf}{(AA*)}{\overline{\VarTMPA}}[\knghenoncetransf]%
+	\StrSubstitute{\knghenoncetransf}{(BB*)}{\overline{\VarTMPB}}[\knghenoncetransf]%
+	\StrSubstitute{\knghenoncetransf}{(CC*)}{\overline{\VarTMPC}}[\knghenoncetransf]%
+	\StrSubstitute{\knghenoncetransf}{(AABB)}{\VarTMPA\tmp@kngh@space\VarTMPB}[\knghenoncetransf]%
+	\StrSubstitute{\knghenoncetransf}{(AACC*)}{\VarTMPA\tmp@kngh@space\overline{\VarTMPC}}[\knghenoncetransf]%
+	\StrSubstitute{\knghenoncetransf}{(AABB*)}{\VarTMPA\tmp@kngh@space\overline{\VarTMPB}}[\knghenoncetransf]%
+	\StrSubstitute{\knghenoncetransf}{(AA*BB)}{\overline{\VarTMPA}\tmp@kngh@space\VarTMPB}[\knghenoncetransf]%
+	\StrSubstitute{\knghenoncetransf}{(AA*CC*)}{\overline{\VarTMPA}\tmp@kngh@space\overline{\VarTMPC}}[\knghenoncetransf]%
+	\StrSubstitute{\knghenoncetransf}{(AA*BB*)}{\overline{\VarTMPA}\tmp@kngh@space\overline{\VarTMPB}}[\knghenoncetransf]%
+	\StrSubstitute{\knghenoncetransf}{(AACC)}{\VarTMPA\tmp@kngh@space\VarTMPC}[\knghenoncetransf]%
+	\StrSubstitute{\knghenoncetransf}{(AA*CC)}{\overline{\VarTMPA}\tmp@kngh@space\VarTMPC}[\knghenoncetransf]%
+	\StrSubstitute{\knghenoncetransf}{(BBCC)}{\VarTMPB\tmp@kngh@space\VarTMPC}[\knghenoncetransf]%
+	\StrSubstitute{\knghenoncetransf}{(BBCC*)}{\VarTMPB\tmp@kngh@space\overline{\VarTMPC}}[\knghenoncetransf]%
+	\StrSubstitute{\knghenoncetransf}{(BB*CC*)}{\overline{\VarTMPB}\tmp@kngh@space\overline{\VarTMPC}}[\knghenoncetransf]%
+	\StrSubstitute{\knghenoncetransf}{(BB*CC)}{\overline{\VarTMPB}\tmp@kngh@space\VarTMPC}[\knghenoncetransf]%
+	\StrSubstitute{\knghenoncetransf}{(AABBCC)}{\VarTMPA\tmp@kngh@space\VarTMPB\tmp@kngh@space\VarTMPC}[\knghenoncetransf]%
+	\StrSubstitute{\knghenoncetransf}{(AABBCC*)}{\VarTMPA\tmp@kngh@space\VarTMPB\tmp@kngh@space\overline{\VarTMPC}}[\knghenoncetransf]%
+	\StrSubstitute{\knghenoncetransf}{(AABB*CC*)}{\VarTMPA\tmp@kngh@space\overline{\VarTMPB}\tmp@kngh@space\overline{\VarTMPC}}[\knghenoncetransf]%
+	\StrSubstitute{\knghenoncetransf}{(AABB*CC)}{\VarTMPA\tmp@kngh@space\overline{\VarTMPB}\tmp@kngh@space\VarTMPC}[\knghenoncetransf]%
+	\StrSubstitute{\knghenoncetransf}{(AA*BBCC)}{\overline{\VarTMPA}\tmp@kngh@space\VarTMPB\tmp@kngh@space\VarTMPC}[\knghenoncetransf]%
+	\StrSubstitute{\knghenoncetransf}{(AA*BBCC*)}{\overline{\VarTMPA}\tmp@kngh@space\VarTMPB\tmp@kngh@space\overline{\VarTMPC}}[\knghenoncetransf]%
+	\StrSubstitute{\knghenoncetransf}{(AA*BB*CC*)}{\overline{\VarTMPA}\tmp@kngh@space\overline{\VarTMPB}\tmp@kngh@space\overline{\VarTMPC}}[\knghenoncetransf]%
+	\StrSubstitute{\knghenoncetransf}{(AA*BB*CC)}{\overline{\VarTMPA}\tmp@kngh@space\overline{\VarTMPB}\tmp@kngh@space\VarTMPC}[\knghenoncetransf]%
+	\ensuremath{\ifboolKV[simplifbool]{Contraire}{\overline{\knghenoncetransf}}{\knghenoncetransf}}%
 }
 
 \NewDocumentCommand\SimplificationBooleenne{ O{} m D<>{} }{%semble OK
@@ -1818,7 +2038,7 @@ end
 	\IfSubStr{\knghbintransf}{(BB)}{\xdef\knghbinres{\inteval{\knghbinres+11001100}}}{}%
 	\IfSubStr{\knghbintransf}{(CC)}{\xdef\knghbinres{\inteval{\knghbinres+01100110}}}{}%
 	\IfSubStr{\knghbintransf}{(AA*)}{\xdef\knghbinres{\inteval{\knghbinres+00001111}}}{}%
-	\IfSubStr{\knghbintransf}{(BB*}{\xdef\knghbinres{\inteval{\knghbinres+00110011}}}{}%
+	\IfSubStr{\knghbintransf}{(BB*)}{\xdef\knghbinres{\inteval{\knghbinres+00110011}}}{}%
 	\IfSubStr{\knghbintransf}{(CC*)}{\xdef\knghbinres{\inteval{\knghbinres+10011001}}}{}%
 	%calculs pour 2 lettres
 	\IfSubStr{\knghbintransf}{(AABB)}{\xdef\knghbinres{\inteval{\knghbinres+11000000}}}{}%
@@ -1856,11 +2076,11 @@ end
 			\StrSubstitute{\knghbinres}{2}{1}[\knghbinres]%
 		}%
 		{}%
-	\ensuremath{%
+	\ensuremath{%\knghbinres=%
 		\ifboolKV[simplifbool]{Enonce}{\ifboolKV[simplifbool]{Contraire}{\overline{\knghenoncetransf}}{\knghenoncetransf}=}{}%
 		\ifboolKV[simplifbool]{Espace}%
-			{\SimplificationKarnaugh[Variables={\simplifboolvars},Espace=true,#3]{\knghbinres}}%
-			{\SimplificationKarnaugh[Variables={\simplifboolvars},Espace=false,#3]{\knghbinres}}%
+			{\SimplificationKarnaugh[Variables={\simplifboolvars},Espace=true,Swap,#3]{\knghbinres}}%
+			{\SimplificationKarnaugh[Variables={\simplifboolvars},Espace=false,Swap,#3]{\knghbinres}}%
 		}
 }
 
@@ -2068,7 +2288,8 @@ end
 	Inconnues=xyz,%
 	Brut=false,%
 	OptionNiceMatrix={1pt},%
-	Enonce=true
+	Enonce=true,%
+	Dense=false
 }
 
 \NewDocumentCommand\ResolSystemeMatrices{ O{} D<>{} m O{#3} O{xyz} }{%
@@ -2199,21 +2420,32 @@ end
 				}%
 				{}%
 			Matriciellement, le système s'écrit sous la forme $\tmpnamematA\times \tmpnamematX = \tmpnamematB$ avec :%
-			\[%
-			\tmpnamematA = \begin{pNiceMatrix}[cell-space-limits=\ResolSysMatOpt] {\MatAffA}&{\MatAffB}&{\MatAffC} \\ {\MatAffD}&{\MatAffE}&{\MatAffF} \\ {\MatAffG}&{\MatAffH}&{\MatAffI} \end{pNiceMatrix}
-			\text{ ; }
-			\tmpnamematX = \begin{pNiceMatrix}[cell-space-limits=\ResolSysMatOpt] \tmpinconnuex \\ \tmpinconnuey \\ \tmpinconnuez \end{pNiceMatrix}
-			\text{ et }
-			\tmpnamematB = \begin{pNiceMatrix}[cell-space-limits=\ResolSysMatOpt] {\MatAffBA} \\ {\MatAffBB} \\ {\MatAffBC} \end{pNiceMatrix}
-			\]%
+			\ifboolKV[resolsysmatrix]{Dense}%
+				{%
+					~$\tmpnamematA = \begin{pNiceMatrix}[cell-space-limits=\ResolSysMatOpt] {\MatAffA}&{\MatAffB}&{\MatAffC} \\ {\MatAffD}&{\MatAffE}&{\MatAffF} \\ {\MatAffG}&{\MatAffH}&{\MatAffI} \end{pNiceMatrix}$ ; $\tmpnamematX = \begin{pNiceMatrix}[cell-space-limits=\ResolSysMatOpt] \tmpinconnuex \\ \tmpinconnuey \\ \tmpinconnuez \end{pNiceMatrix}$ et $\tmpnamematB = \begin{pNiceMatrix}[cell-space-limits=\ResolSysMatOpt] {\MatAffBA} \\ {\MatAffBB} \\ {\MatAffBC} \end{pNiceMatrix}$.\\
+				}%
+				{%
+					\[%
+					\tmpnamematA = \begin{pNiceMatrix}[cell-space-limits=\ResolSysMatOpt] {\MatAffA}&{\MatAffB}&{\MatAffC} \\ {\MatAffD}&{\MatAffE}&{\MatAffF} \\ {\MatAffG}&{\MatAffH}&{\MatAffI} \end{pNiceMatrix}
+					\text{ ; }
+					\tmpnamematX = \begin{pNiceMatrix}[cell-space-limits=\ResolSysMatOpt] \tmpinconnuex \\ \tmpinconnuey \\ \tmpinconnuez \end{pNiceMatrix}
+					\text{ et }
+					\tmpnamematB = \begin{pNiceMatrix}[cell-space-limits=\ResolSysMatOpt] {\MatAffBA} \\ {\MatAffBB} \\ {\MatAffBC} \end{pNiceMatrix}
+					\]%
+				}%
 			\xintifboolexpr{\DETMATRICE == 0}%
 				{%
 					La matrice $\tmpnamematA$ n'est pas inversible, donc le système n'admet pas de solution (ou admet une unifinité de solutions).%
 				}%
 				{%
 					La matrice $\tmpnamematA$ est inversible, et :%
-					\[\tmpnamematA\times \tmpnamematX = \tmpnamematB \implies \underbrace{\ResolSysMatInv \times \tmpnamematA}_{{=}I_3} \times \tmpnamematX = \ResolSysMatInv \times \tmpnamematB \implies I_3 \times \tmpnamematX = \ResolSysMatInv\times \tmpnamematB \implies \tmpnamematX=\ResolSysMatInv\times \tmpnamematB.\]
-					%
+					\ifboolKV[resolsysmatrix]{Dense}%
+						{%
+							~$\tmpnamematA\times \tmpnamematX = \tmpnamematB \implies \underbrace{\ResolSysMatInv \times \tmpnamematA}_{{=}I_3} \times \tmpnamematX = \ResolSysMatInv \times \tmpnamematB \implies \tmpnamematX=\ResolSysMatInv\times \tmpnamematB$.\\%
+						}%
+						{%
+							\[\tmpnamematA\times \tmpnamematX = \tmpnamematB \implies \underbrace{\ResolSysMatInv \times \tmpnamematA}_{{=}I_3} \times \tmpnamematX = \ResolSysMatInv \times \tmpnamematB \implies I_3 \times \tmpnamematX = \ResolSysMatInv\times \tmpnamematB \implies \tmpnamematX=\ResolSysMatInv\times \tmpnamematB.\]%
+						}%
 					La calculatrice nous donne $\tmpnamematX = \begin{pNiceMatrix}[cell-space-limits=\ResolSysMatOpt] {\MatResA} \\ {\MatResB} \\ {\MatResC} \end{pNiceMatrix}$. Ainsi on obtient $\tmpinconnuex=\MatResA$ et $\tmpinconnuey=\MatResB$ et $\tmpinconnuez=\MatResC$.%
 				}%
 		}%
@@ -2488,6 +2720,117 @@ end
 			\SioIntPoseMultiplication{\tmpcalcA}{\tmpcalcB}<#3>
 		}%
 		{}%
+}
+
+%===TABLES EN BASE QQC
+\newlength{\wdthtblbase}
+\setlength{\wdthtblbase}{1.66em}
+
+\defKV[ConversionBaseBase]{%
+	Unite=\setlength{\wdthtblbase}{#1},%
+	Couleurs=\def\blbasecolors{#1},%
+	Police=\def\blbasefonte{#1}
+}
+
+\setKVdefault[ConversionBaseBase]{%
+	Unite=1.66em,%
+	Couleurs={cyan!25,lime!25},%
+	Police=\normalfont\normalsize,%
+	Dernier=false
+}
+
+\ExplSyntaxOn
+\NewExpandableDocumentCommand\ConversionBaseVersBase{ m m m }{%
+	%1 = nb
+	%2 = base dép
+	%3 = base arriv
+	\int_to_Base:nn {\int_from_base:nn {#2}{#1}}{#3}
+}
+\ExplSyntaxOff
+
+\NewDocumentCommand\TableBase{ O{} m m D<>{} }{%
+	%1 = options, %2 = base, %3 = opération (+ ou * ou ×)
+	\restoreKV[ConversionBaseBase]%
+	\setKV[ConversionBaseBase]{#1}%
+	\xdef\tmplastdigit{\inteval{#2-1}}%
+	\begin{tikzpicture}[x=\wdthtblbase,y=\wdthtblbase,line join=rect,line cap=rect,#4]
+		%inner sep
+		\tikzstyle{every node}=[inner sep=0pt,text depth=0pt]
+		%police
+		\tikzset{CasePolice/.style={font=\blbasefonte}}%
+		%couleurs
+		\IfEq{\blbasecolors}{}%
+		{%
+			\tikzset{CaseSign/.style={draw=none}}%
+			\tikzset{CaseDigit/.style={draw=none}}%
+			\tikzset{CaseDiag/.style={draw=none}}%
+		}%
+		{%
+			\readlist*\btbColors{\blbasecolors}%
+			\itemtomacro\btbColors[1]\tmpcolsgn%
+			\itemtomacro\btbColors[2]\tmpcolsdigit%
+			\IfStrEq{\tmpcolsgn}{}{\tikzset{CaseSign/.style={draw=none}}}{\tikzset{CaseSign/.style={draw=none,fill=\tmpcolsgn}}}%
+			\IfStrEq{\tmpcolsdigit}{}{\tikzset{CaseDigit/.style={draw=none}}}{\tikzset{CaseDigit/.style={draw=none,fill=\tmpcolsdigit}}}%
+			\xintifboolexpr{\btbColorslen >= 3}%
+				{%
+					\itemtomacro\btbColors[3]\tmpcolsdiag%
+					\itemtomacro\btbColors[3]\tmpcolsdiag%
+					\tikzset{CaseDiag/.style={draw=none,fill=\tmpcolsdiag}}%
+				}%
+				{%
+					\tikzset{CaseDiag/.style={draw=none}}%
+				}%
+		}%
+		%1ère ligne & 1ère colonne
+		\draw[CaseSign] (0,0) rectangle++ (1,-1) node[CasePolice,midway] {\IfStrEqCase{#3}{{+}{+}{*}{×}{×}{×}}[+]} ;
+		\foreach \idigit in {0,...,\tmplastdigit}{%
+			\draw[CaseDigit] ({\idigit+1},0) rectangle++ (1,-1) node[CasePolice,midway] {\ConversionBaseVersBase{\idigit}{10}{#2}} ;
+			\draw[CaseDigit] (0,{-\idigit-1}) rectangle++ (1,-1) node[CasePolice,midway] {\ConversionBaseVersBase{\idigit}{10}{#2}} ;
+		}%
+		%les calculs jusqu'au dernier chiffre
+		\foreach \i in {0,...,\tmplastdigit}{%
+			\foreach \j in {0,...,\tmplastdigit}{%
+				\IfStrEqCase{#3}{%+ par défaut
+					{+}{\xdef\tmpcalcbase{\xinteval{\i+\j}}}%
+					{*}{\xdef\tmpcalcbase{\xinteval{\i*\j}}}%
+					{×}{\xdef\tmpcalcbase{\xinteval{\i*\j}}}%
+				}[\xdef\tmpcalcbase{\xinteval{\i+\j}}]%
+				\xintifboolexpr{\i == \j}%
+					{\draw[CaseDiag] ({\i+1},{-\j-1}) rectangle++ (1,-1) node[CasePolice,midway] {\ConversionBaseVersBase{\tmpcalcbase}{10}{#2}} ;}%
+					{\draw ({\i+1+0.5},{-\j-1-0.5}) node[CasePolice] {\ConversionBaseVersBase{\tmpcalcbase}{10}{#2}} ;}%
+			}%
+		}%
+		%les calculs avec '10' si Dernier=true
+		\ifboolKV[ConversionBaseBase]{Dernier}%
+			{%
+				\draw[CaseDigit] ({\tmplastdigit+2},0) rectangle++ (1,-1) node[CasePolice,midway] {\ConversionBaseVersBase{#2}{10}{#2}} ;
+				\draw[CaseDigit] (0,{-\tmplastdigit-2},0) rectangle++ (1,-1) node[CasePolice,midway] {\ConversionBaseVersBase{#2}{10}{#2}} ;
+				\foreach \i in {0,...,\tmplastdigit}{%
+					\IfStrEqCase{#3}{%
+						{+}{\xdef\tmpcalcbase{\xinteval{\i+(#2)}}}%
+						{*}{\xdef\tmpcalcbase{\xinteval{\i*(#2)}}}%
+						{×}{\xdef\tmpcalcbase{\xinteval{\i*(#2)}}}%
+					}[\xdef\tmpcalcbase{\xinteval{\i+(#2)}}]%
+					\draw ({\i+1+0.5},{-#2-1-0.5}) node[CasePolice] {\ConversionBaseVersBase{\tmpcalcbase}{10}{#2}} ;
+					\draw ({#2+1+0.5},{-\i-1-0.5}) node[CasePolice] {\ConversionBaseVersBase{\tmpcalcbase}{10}{#2}} ;
+				}%
+				\draw[CaseDiag] ({#2+1},{-(#2)-1}) rectangle++ (1,-1) node[CasePolice,midway] {\ConversionBaseVersBase{(#2)*(#2)}{10}{#2}} ;
+			}%
+			{}%
+		%la grille pour finir ^^
+		\ifboolKV[ConversionBaseBase]{Dernier}%
+			{%
+				\IfStrEqCase{#3}{{+}{\draw[xstep=1,ystep=1] (0,0) grid ({#2+1},{-1-(#2)}) ;}{*}{\draw[xstep=1,ystep=1] (0,0) grid ({#2+1+1},{-1-(#2)-1}) ;}{×}{\draw[xstep=1,ystep=1] (0,0) grid ({#2+1+1},{-1-(#2)-1}) ;}}
+			}%
+			{%
+				\draw[xstep=1,ystep=1] (0,0) grid ({#2+1},{-1-(#2)}) ;
+			}%
+	\end{tikzpicture}%
+}
+
+%===ÉCRITURES CHEMINS
+\NewDocumentCommand\EcritureChemin{ O{\,--\,} m }{%
+	\StrSubstitute{#2}{/}{#1}\relax%
 }
 
 \endinput
