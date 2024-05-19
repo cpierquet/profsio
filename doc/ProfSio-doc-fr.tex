@@ -5,8 +5,8 @@
 
 \documentclass[french,a4paper,11pt]{article}
 \usepackage[margin=2cm,includefoot]{geometry}
-\def\TPversion{0.2.7}
-\def\TPdate{12 mai 2024}
+\def\TPversion{0.2.8}
+\def\TPdate{18 mai 2024}
 %\usepackage[utf8]{inputenc}
 %\usepackage[T1]{fontenc}
 \usepackage{amsmath,amssymb}
@@ -21,6 +21,7 @@
 \UseTblrLibrary{booktabs}
 \usepackage{fancyvrb}
 \usepackage{fancyhdr}
+\usepackage{pdfpages}
 \fancyhf{}
 \renewcommand{\headrulewidth}{0pt}
 \lfoot{\sffamily\small [ProfSio]}
@@ -81,10 +82,10 @@
 		keywordstyle={\color{violet}},%
 		classoffset=2,%
 		alsoletter={-},%
-		morekeywords={\MPMPlaceTache,\MPMPlaceNotice,\MPMPlaceDuree,GrapheMPM,TableKarnaugh,\KarnaughCasesResult,\KarnaughBlocRegroup,\KarnaughBlocRegroupAuto,\MPMPlaceTaches,\MPMPlaceDurees,GrapheTikz,\GrphPlaceSommets,\GrphTraceAretes,\tikzset,\DiagrammeSagittal,\draw,\DiagrammeSagittalCompo,\TableVerite,\SimplificationKarnaugh,\SimplificationBooleenne,\KarnaughCasesAuto,\MatriceAdjacence,\PuissanceMatrice,\NbCheminsLongueur,\FermetureTransitive,\ResolSystemeMatrices,\PresentProdMat,\OpeBinDecHex,\ExprBool},%
+		morekeywords={\MPMPlaceTache,\MPMPlaceNotice,\MPMPlaceDuree,GrapheMPM,TableKarnaugh,\KarnaughCasesResult,\KarnaughBlocRegroup,\KarnaughBlocRegroupAuto,\MPMPlaceTaches,\MPMPlaceDurees,GrapheTikz,\GrphPlaceSommets,\GrphTraceAretes,\tikzset,\DiagrammeSagittal,\draw,\DiagrammeSagittalCompo,\TableVerite,\SimplificationKarnaugh,\SimplificationBooleenne,\KarnaughCasesAuto,\MatriceAdjacence,\PuissanceMatrice,\NbCheminsLongueur,\FermetureTransitive,\ResolSystemeMatrices,\PresentProdMat,\OpeBinDecHex,\ExprBool,\GrilleCCFSIO},%
 		keywordstyle={\color{green!50!black}},%
 		classoffset=3,%
-		morekeywords={CouleurDurees,CouleurFleches,LargeurCases,Epaisseur,Police,CouleurDates,CouleurBords,NoirBlanc,Grille,DecalHorizDeb,DecalVertDeb,DecalHorizFin,DecalVertFin,Coude,SensCoude,Unite,Variables,Swap,Aide,CouleurCases,Decalage,Couleur,Type,Legende,PosVarLaterale,CouleurLegende,CouleurSommets,TypeSommets,Unite,CouleurFT,DimensionSommets,PositionFleches,EchelleFleches,TypeFleche,Droit,Milieu,AngleGauche,AngleDroite,Boucle,GrphStyleArc,GrphStyleSommet,Poids,GrphStylepoids,DistElem,DistEns,LargEns,NomAppli,CouleurE,CouleurAppli,CouleurF,CouleursFleches,TypeFleche,Epaisseur,Labels,Ensembles,PosLabels,PoliceLabels,Offset,NomApplis,CouleursAppli,VF,LargeursColonnes,CouleurEnonce,CodeAvant,CodeApres,StyleAlternatif,PoliceTT,Espace,Couleurs,Contraire,Enonce,Bordure,Sommets,Num,PoliceBordure,De,Vers,Formule,Brut,NomMatrice,Longueur,Complet,NomsMatrices,NomInverse,NomSysteme,Inconnues,OptionNiceMatrix,Base,AffRetenues,AffEgal,SymbDecal,LimiteCapac,CouleurRetenue,Interm,Enonce,Decalages,Couleurs,Dense,Dernier,MathE,MathF,MathG,CouleurPlus,Vide,HauteurVide},%
+		morekeywords={CouleurDurees,CouleurFleches,LargeurCases,Epaisseur,Police,CouleurDates,CouleurBords,NoirBlanc,Grille,DecalHorizDeb,DecalVertDeb,DecalHorizFin,DecalVertFin,Coude,SensCoude,Unite,Variables,Swap,Aide,CouleurCases,Decalage,Couleur,Type,Legende,PosVarLaterale,CouleurLegende,CouleurSommets,TypeSommets,Unite,CouleurFT,DimensionSommets,PositionFleches,EchelleFleches,TypeFleche,Droit,Milieu,AngleGauche,AngleDroite,Boucle,GrphStyleArc,GrphStyleSommet,Poids,GrphStylepoids,DistElem,DistEns,LargEns,NomAppli,CouleurE,CouleurAppli,CouleurF,CouleursFleches,TypeFleche,Epaisseur,Labels,Ensembles,PosLabels,PoliceLabels,Offset,NomApplis,CouleursAppli,VF,LargeursColonnes,CouleurEnonce,CodeAvant,CodeApres,StyleAlternatif,PoliceTT,Espace,Couleurs,Contraire,Enonce,Bordure,Sommets,Num,PoliceBordure,De,Vers,Formule,Brut,NomMatrice,Longueur,Complet,NomsMatrices,NomInverse,NomSysteme,Inconnues,OptionNiceMatrix,Base,AffRetenues,AffEgal,SymbDecal,LimiteCapac,CouleurRetenue,Interm,Enonce,Decalages,Couleurs,Dense,Dernier,MathE,MathF,MathG,CouleurPlus,Vide,HauteurVide,Session,PoliceManuscrite},%
 		keywordstyle={\color{orange}}
 	},%
 	#1
@@ -254,6 +255,8 @@
 \newpage
 
 \section{Historique}
+
+\verb|v0.2.8|~:~~~~Grilles d'évaluation des CCF
 
 \verb|v0.2.7|~:~~~~Correction d'un bug dans les simplifications de Karnaugh
 
@@ -1165,9 +1168,9 @@ Par exemple :
 \vspace*{-\baselineskip}\leavevmode
 \end{cautionblock}
 
-%\begin{importantblock}
-%En interne, la commande utilise la simplification par table de Karnaugh, et la commande peut également se charger de formater le résultat brut de l'expression.
-%\end{importantblock}
+\begin{noteblock}
+La plupart des clés de la commande de simplification par Karnaugh sont utilisables avec cette commande, notamment celles de formatage des couleurs.
+\end{noteblock}
 
 \subsection{Arguments et clés }
 
@@ -1186,6 +1189,7 @@ Les clés disponibles sont :
 	\item \Cle{Enonce} := booléen pour afficher l'expression booléenne brute ;  \hfill~défaut : \Cle{true}
 	\item \Cle{Variables} := variables utilisées ; \hfill~défaut : \Cle{a/b/c}
 	\item \Cle{Contraire} := booléen pour travailler sur le contraire ; \hfill~défaut : \Cle{false}
+	\item \Cle{Couleurs} et \Cle{CouleurPlus} := couleurs(s) de la sortie ;  \hfill~défaut : \Cle{black}
 	\item \Cle{Espace} := booléen pour rajouter un petit espace (1.5~mu) dans les produits.
 	
 	\hfill~défaut : \Cle{true}
@@ -1218,7 +1222,9 @@ $\overline{E} = \SimplificationBooleenne[Contraire,Variables=g/b/n]{(g)+(gb)+(gb
 \end{DemoCode}
 
 \begin{DemoCode}
-On a $F = \SimplificationBooleenne{(a)+(abc*)+(a*b*c)+(abc)+(a*bc)}$.
+On a $F = \SimplificationBooleenne%
+  [Couleurs={blue/red/violet},CouleurPlus=orange]%
+  {(a)+(abc*)+(a*b*c)+(abc)+(a*bc)}$.
 \end{DemoCode}
 
 \pagebreak
@@ -2264,5 +2270,81 @@ On a, par produit matriciel le calcul
 	{3&3&3\\3&3&3\\3&3&3}
 	<cell-space-limits=3pt>
 \end{DemoCode}
+
+\pagebreak
+
+\section{Fiches annexes pour les CCF de mathématiques}
+
+\subsection{Introduction}
+
+L'idée est de proposer des commandes pour générer \textit{facilement} les fiches d'évaluation pour les deux situations de CCF de mathématiques en SIO.
+
+\smallskip
+
+Il s'agit des annexes 7-1 (recto), 7-2 (recto verso) et 7-3 (recto verso).
+
+\smallskip
+
+Un exemple de rendu est donné en marge de la présente documentation (avec code source).
+
+\smallskip
+
+Le code source de base des exemples est donné ci-dessous.
+
+\begin{DemoCode}[listing only]
+\documentclass[a4paper,french,12pt]{article}
+\usepackage[margin=1.5cm]{geometry}
+\usepackage{fontspec}
+\usepackage{ProfSio}
+\setsansfont{Fira Sans}[Scale=MatchLowercase]
+\newfontfamily\poltuto{QTSanDiego}
+\usepackage{babel}
+\end{DemoCode}
+
+\subsection{Annexe 7-1}
+
+\begin{DemoCode}[listing only]
+\GrilleCCFSIO[Type={7-1},Session=...,PoliceManuscrite=...]
+	{NOM Prénom}
+	{date}
+	{intitulé court}
+\end{DemoCode}
+
+\subsection{Annexe 7-2}
+
+\begin{DemoCode}[listing only]
+\GrilleCCFSIO[Type={7-2},Session=...,PoliceManuscrite=...]
+	{NOM Prénom}
+	{date}
+	{intitulé court}
+	<compétenceA / compétenceB / compétence C / compétence D>
+\end{DemoCode}
+
+\subsection{Annexe 7-3}
+
+\begin{DemoCode}[listing only]
+\GrilleCCFSIO[Type={7-3},Session=...,PoliceManuscrite=...]
+	{NOM Prénom}
+	{date}
+	{identification du sujet proposé}
+\end{DemoCode}
+
+\newpage
+
+\thispagestyle{empty}
+
+\includepdf[frame,pages=-,width=\textwidth]{ProfSio-doc-annexe71.pdf}
+
+\newpage
+
+\thispagestyle{empty}
+
+\includepdf[frame,pages=-,width=\textwidth]{ProfSio-doc-annexe72.pdf}
+
+\newpage
+
+\thispagestyle{empty}
+
+\includepdf[frame,pages=-,width=\textwidth]{ProfSio-doc-annexe73.pdf}
 
 \end{document}
